@@ -1,0 +1,15 @@
+
+//{{ .Name }}
+type {{ .Name }}Store struct {
+	base.Store
+}
+func New{{ .Name }}Store(conn *bongo.Connection) *{{ .Name }}Store {
+	return &{{ .Name }}Store{*base.NewStore(conn, "my_model")}
+}
+
+func (s *{{ .Name }}Store) New() *{{ .Name }} {
+	return &{{ .Name }}{}
+}
+
+{{ template "query" . }}
+

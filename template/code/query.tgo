@@ -1,0 +1,11 @@
+
+type {{ .Name }}Query struct {
+	base.BaseQuery
+}
+{{ $modelName := .Name }}
+{{ range .Fields }}
+func (q *{{ $modelName }}Query) FindBy{{ .Name }}(x {{ .Type }}) {
+	q.AddCriteria("{{ .DbName}}", x)
+}
+{{ end }}
+
