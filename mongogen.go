@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"mongogen/generator"
+	"github.com/tyba/mongogen/generator"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"mongogen/template"
+	"github.com/tyba/mongogen/template"
 )
 
 type Generator struct {

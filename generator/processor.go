@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	. "mongogen/model"
+	. "github.com/tyba/mongogen/model"
 )
 
 type Processor struct {

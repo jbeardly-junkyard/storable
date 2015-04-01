@@ -8,7 +8,7 @@ import (
 	"io"
 	gotemplate "text/template"
 
-    . "mongogen/model"
+    . "github.com/tyba/mongogen/model"
 )
 
 type TemplateData struct {
