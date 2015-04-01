@@ -7,8 +7,9 @@ import (
 )
 
 type Model struct {
-	Name   string
-	Fields []Field
+	Name       string
+	Collection string
+	Fields     []Field
 }
 
 func (m *Model) String() string {

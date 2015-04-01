@@ -28,7 +28,7 @@ func NewProcessor(filename string) *Processor {
 }
 
 func (p *Processor) Filename() string {
-    return p.filename
+	return p.filename
 }
 
 func (p *Processor) Process() error {
@@ -53,12 +53,10 @@ func (p *Processor) parseFile() error {
 	return err
 }
 
-func (p *Processor) extractModels() []*Model {
+func (p *Processor) extractModels() {
 	for _, decl := range p.file.Decls {
 		ast.Walk(p, decl)
 	}
-
-	return make([]*Model, 0)
 }
 
 func (p *Processor) Visit(node ast.Node) ast.Visitor {
@@ -92,16 +90,16 @@ func (p *Processor) processStruct(name string, st *ast.StructType) {
 }
 
 type structProcessor struct {
-	processor *Processor
-	generate  bool
-	Model     *Model
+	processor  *Processor
+	collection string
+	Model      *Model
 }
 
 func newStructProcessor(p *Processor) *structProcessor {
 	return &structProcessor{
-		processor: p,
-		generate:  false,
-		Model:     nil,
+		processor:  p,
+		collection: "",
+		Model:      nil,
 	}
 }
 
@@ -112,10 +110,11 @@ func (sp *structProcessor) process(name string, st *ast.StructType) *Model {
 		fields = append(fields, more...)
 	}
 
-	if sp.generate {
+	if sp.collection != "" {
 		return &Model{
-			Name:   name,
-			Fields: fields,
+			Name:       name,
+			Collection: sp.collection,
+			Fields:     fields,
 		}
 	}
 
@@ -126,8 +125,11 @@ func (sp *structProcessor) processFieldDef(def *ast.Field) []Field {
 
 	typeStr := sp.processor.nodeString(def.Type)
 	structTag := sp.extractTag(def)
-	if structTag != nil && structTag.Get("collection") != "" {
-		sp.generate = true
+	if structTag != nil {
+		collection := structTag.Get("collection")
+		if collection != "" {
+			sp.collection = collection
+		}
 	}
 
 	fields := sp.makeFields(def.Names, typeStr, structTag)
