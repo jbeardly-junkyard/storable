@@ -2,7 +2,7 @@ package {{.Package}}
 
 import (
 	"gopkg.in/maxwellhealth/bongo.v0"
-    "mongogen/base"
+    "github.com/tyba/mongogen/base"
 )
 
 {{ range .Models }}
