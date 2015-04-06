@@ -9,7 +9,14 @@ import (
 type Model struct {
 	Name       string
 	Collection string
-	Fields     []Field
+	Fields     []*Field
+}
+
+func NewModel(name string) *Model {
+	return &Model{
+		Name:   name,
+		Fields: make([]*Field, 0),
+	}
 }
 
 func (m *Model) String() string {

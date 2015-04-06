@@ -104,7 +104,7 @@ func newStructProcessor(p *Processor) *structProcessor {
 }
 
 func (sp *structProcessor) process(name string, st *ast.StructType) *Model {
-	fields := make([]Field, 0)
+	fields := make([]*Field, 0)
 	for _, fieldDef := range st.Fields.List {
 		more := sp.processFieldDef(fieldDef)
 		fields = append(fields, more...)
@@ -121,7 +121,7 @@ func (sp *structProcessor) process(name string, st *ast.StructType) *Model {
 	return nil
 }
 
-func (sp *structProcessor) processFieldDef(def *ast.Field) []Field {
+func (sp *structProcessor) processFieldDef(def *ast.Field) []*Field {
 
 	typeStr := sp.processor.nodeString(def.Type)
 	structTag := sp.extractTag(def)
@@ -140,11 +140,11 @@ func (sp *structProcessor) processFieldDef(def *ast.Field) []Field {
 func (sp *structProcessor) makeFields(
 	names []*ast.Ident,
 	typeStr string,
-	tag *reflect.StructTag) []Field {
+	tag *reflect.StructTag) []*Field {
 
-	fields := make([]Field, 0)
+	fields := make([]*Field, 0)
 	for _, ident := range names {
-		field := Field{
+		field := &Field{
 			Name: sp.processor.nodeString(ident),
 			Type: typeStr,
 			Tag:  tag,
