@@ -47,7 +47,7 @@ func (p *Processor) Package() string {
 func (p *Processor) parseFile() error {
 	var err error
 	p.file, err = parser.ParseFile(
-		p.fileset, p.filename, nil, parser.ParseComments|parser.Trace,
+		p.fileset, p.filename, nil, parser.ParseComments,
 	)
 
 	return err

@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+var findableTypes = map[string]bool{
+	"string":  true,
+	"int":     true,
+	"float64": true,
+}
+
 type Model struct {
 	Name       string
 	Collection string
@@ -29,6 +35,17 @@ func (m *Model) String() string {
 	str := fmt.Sprintf("(Model '%s' [ %s ]", m.Name, fieldsStr)
 
 	return str
+}
+
+func (m *Model) FindableFields() []*Field {
+	fields := make([]*Field, 0)
+	for _, f := range m.Fields {
+		if f.Findable() {
+			fields = append(fields, f)
+		}
+	}
+
+	return fields
 }
 
 type Field struct {
@@ -56,9 +73,6 @@ func (f *Field) DbName() string {
 	return name
 }
 
-func NewModel(name string) *Model {
-	return &Model{
-		Name:   name,
-		Fields: make([]Field, 0),
-	}
+func (f *Field) Findable() bool {
+	return findableTypes[f.Type]
 }

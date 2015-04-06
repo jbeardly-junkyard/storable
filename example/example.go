@@ -19,8 +19,8 @@ type SomeType struct { // not generated
 
 type AnotherModel struct {
 	bongo.DocumentBase `bson:",inline" collection:"another_model"`
-	Foo float64
-	Bar string
+	Foo                float64
+	Bar                string
 }
 
 func (m *MyModel) IrrelevantFunction() {
