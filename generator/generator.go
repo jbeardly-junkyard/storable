@@ -48,7 +48,7 @@ func (g *Generator) runTemplates(wr io.Writer) error {
 func (g *Generator) destFilename() string {
 	dir, file := path.Split(g.processor.Filename())
 
-	return dir + "_" + file
+	return dir + "base_" + file
 }
 
 func (g *Generator) getTemplateData() template.TemplateData {

@@ -4,8 +4,8 @@ type {{ .Name }}Query struct {
 }
 {{ $modelName := .Name }}
 {{ range .FindableFields }}
-func (q *{{ $modelName }}Query) FindBy{{ .Name }}(x {{ .Type }}) {
-	q.AddCriteria("{{ .DbName}}", x)
+func (q *{{ $modelName }}Query) FindBy{{ .Name }}(value {{ .Type }}) {
+	q.AddCriteria("{{ .DbName}}", value)
 }
 {{ end }}
 

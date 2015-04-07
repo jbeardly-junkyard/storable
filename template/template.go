@@ -8,7 +8,7 @@ import (
 	"io"
 	gotemplate "text/template"
 
-    . "github.com/tyba/mongogen/model"
+	. "github.com/tyba/mongogen/model"
 )
 
 type TemplateData struct {
@@ -62,5 +62,6 @@ func addTemplate(base *gotemplate.Template, name string, filename string) *gotem
 var base *gotemplate.Template = makeTemplate("base", "template/code/base.tgo")
 var model *gotemplate.Template = addTemplate(base, "model", "template/code/model.tgo")
 var query *gotemplate.Template = addTemplate(model, "query", "template/code/query.tgo")
+var resultset *gotemplate.Template = addTemplate(model, "resultset", "template/code/resultset.tgo")
 
 var Base *Template = &Template{template: base}

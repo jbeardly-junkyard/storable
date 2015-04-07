@@ -7,8 +7,8 @@ import "github.com/maxwellhealth/bongo"
 type MyModel struct {
 	bongo.DocumentBase `bson:",inline" collection:"my_model"`
 
-	Bla   string
-	Ble   int `bson:"bla2"`
+	Foo   string
+	Bar   int `bson:"bla2"`
 	Bytes []byte
 }
 
