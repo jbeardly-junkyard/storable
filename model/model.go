@@ -76,6 +76,11 @@ func (f *Field) GetTagValue(key string) string {
 
 func (f *Field) DbName() string {
 	name := f.GetTagValue("bson")
+	endFieldName := strings.Index(name, ",")
+	if endFieldName != -1 {
+		name = name[:endFieldName]
+	}
+
 	if name == "" {
 		name = strings.ToLower(f.Name)
 	}
