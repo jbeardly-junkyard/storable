@@ -88,7 +88,10 @@ func (f *Field) DbName() string {
 	return name
 }
 
+func (f *Field) FindableType() string {
+	return strings.Replace(f.Type, "[]", "", 1)
+}
+
 func (f *Field) Findable() bool {
-	t := strings.Replace(f.Type, "[]", "", 1)
-	return findableTypes[t]
+	return findableTypes[f.FindableType()]
 }

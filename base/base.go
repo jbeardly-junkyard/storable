@@ -65,6 +65,10 @@ func (s *Store) Find(query Query) (*ResultSet, error) {
 	return &ResultSet{resultSet}, nil
 }
 
+func (s *Store) RawUpdate(query Query, update interface{}) error {
+	return s.coll.Collection().Update(query.GetCriteria(), update)
+}
+
 type Query interface {
 	GetCriteria() bson.M
 }

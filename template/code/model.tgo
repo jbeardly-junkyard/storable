@@ -24,6 +24,16 @@ func (s *{{ .Name }}Store) Find(query *{{ .Name }}Query) (*{{ .Name }}ResultSet,
     return &{{ .Name }}ResultSet{*resultSet}, nil
 }
 
+func (s *{{ .Name }}Store) FindOne(query *{{ .Name }}Query) (*{{ .Name }}, error) {
+    resultSet, err := s.Find(query)
+    if err != nil {
+        return nil, err
+    }
+
+    return resultSet.One()
+}
+
+
 {{ template "query" . }}
 
 {{ template "resultset" . }}
