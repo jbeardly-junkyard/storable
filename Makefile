@@ -1,3 +1,3 @@
 all:
-	go-bindata -debug=false -pkg="template" -o="template/bindata.go" -ignore="/\." template/code/
+	go-bindata -debug=false -pkg="mongogen" -o="bindata.go" -ignore="/\." templates/
 	go build

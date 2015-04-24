@@ -12,7 +12,7 @@ func (s *BaseSuite) TestStore_Insert(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(p.IsNew(), Equals, false)
 
-	r, err := st.Find(NewQuery())
+	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)
 
 	var result []*Person
@@ -42,7 +42,7 @@ func (s *BaseSuite) TestStore_Update(c *C) {
 	err := st.Update(p)
 	c.Assert(err, IsNil)
 
-	q := NewQuery()
+	q := NewBaseQuery()
 	q.AddCriteria("firstname", "qux")
 
 	r, err := st.Find(q)
@@ -70,7 +70,7 @@ func (s *BaseSuite) TestStore_Delete(c *C) {
 	err := st.Delete(p)
 	c.Assert(err, IsNil)
 
-	r, err := st.Find(NewQuery())
+	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)
 
 	var result []*Person
@@ -83,7 +83,7 @@ func (s *BaseSuite) TestStore_FindLimit(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	q := NewQuery()
+	q := NewBaseQuery()
 	q.Limit = 1
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
@@ -99,7 +99,7 @@ func (s *BaseSuite) TestStore_FindSkip(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	q := NewQuery()
+	q := NewBaseQuery()
 	q.Skip = 1
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
@@ -115,7 +115,7 @@ func (s *BaseSuite) TestStore_FindSort(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	q := NewQuery()
+	q := NewBaseQuery()
 	q.Sort = Sort{{IdField, Desc}}
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
@@ -132,13 +132,13 @@ func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	q := NewQuery()
+	q := NewBaseQuery()
 	q.AddCriteria("firstname", "foo")
 
 	err := st.RawUpdate(q, bson.M{"firstname": "qux"})
 	c.Assert(err, IsNil)
 
-	q = NewQuery()
+	q = NewBaseQuery()
 	q.AddCriteria("firstname", "qux")
 
 	r, err := st.Find(q)

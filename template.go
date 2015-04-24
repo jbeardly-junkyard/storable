@@ -1,4 +1,4 @@
-package template
+package mongogen
 
 import (
 	"bytes"
@@ -6,9 +6,7 @@ import (
 	"go/printer"
 	"go/token"
 	"io"
-	gotemplate "text/template"
-
-	. "github.com/tyba/mongogen/model"
+	"text/template"
 )
 
 type TemplateData struct {
@@ -17,7 +15,7 @@ type TemplateData struct {
 }
 
 type Template struct {
-	template *gotemplate.Template
+	template *template.Template
 }
 
 func (t *Template) Execute(wr io.Writer, data interface{}) error {
@@ -49,19 +47,19 @@ func loadTemplateText(filename string) string {
 	return string(text)
 }
 
-func makeTemplate(name string, filename string) *gotemplate.Template {
+func makeTemplate(name string, filename string) *template.Template {
 	text := loadTemplateText(filename)
-	return gotemplate.Must(gotemplate.New(name).Parse(text))
+	return template.Must(template.New(name).Parse(text))
 }
 
-func addTemplate(base *gotemplate.Template, name string, filename string) *gotemplate.Template {
+func addTemplate(base *template.Template, name string, filename string) *template.Template {
 	text := loadTemplateText(filename)
-	return gotemplate.Must(base.New(name).Parse(text))
+	return template.Must(base.New(name).Parse(text))
 }
 
-var base *gotemplate.Template = makeTemplate("base", "template/code/base.tgo")
-var model *gotemplate.Template = addTemplate(base, "model", "template/code/model.tgo")
-var query *gotemplate.Template = addTemplate(model, "query", "template/code/query.tgo")
-var resultset *gotemplate.Template = addTemplate(model, "resultset", "template/code/resultset.tgo")
+var base *template.Template = makeTemplate("base", "templates/base.tgo")
+var model *template.Template = addTemplate(base, "model", "templates/model.tgo")
+var query *template.Template = addTemplate(model, "query", "templates/query.tgo")
+var resultset *template.Template = addTemplate(model, "resultset", "templates/resultset.tgo")
 
 var Base *Template = &Template{template: base}

@@ -1,4 +1,4 @@
-package model
+package mongogen
 
 import (
 	"fmt"
@@ -61,16 +61,17 @@ func (m *Model) FindableFields() []*Field {
 type Field struct {
 	Name string
 	Type string
-	Tag  *reflect.StructTag
+	Tag  reflect.StructTag
 }
 
 func (f *Field) String() string {
 	return fmt.Sprintf("%s %s %s", f.Name, f.Type, f.Tag)
 }
 func (f *Field) GetTagValue(key string) string {
-	if f.Tag == nil {
+	if f.Tag == "" {
 		return ""
 	}
+
 	return f.Tag.Get(key)
 }
 
