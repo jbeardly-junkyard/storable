@@ -6,7 +6,7 @@ import (
 )
 
 func (s *BaseSuite) TestQuery_AddCriteria(c *C) {
-	q := NewBaseQuery()
+	q := NewQuery()
 	q.AddCriteria("foo", "bar")
 
 	c.Assert(q.GetCriteria()["foo"], Equals, "bar")
@@ -15,7 +15,7 @@ func (s *BaseSuite) TestQuery_AddCriteria(c *C) {
 func (s *BaseSuite) TestQuery_FindById(c *C) {
 	id := bson.NewObjectId()
 
-	q := NewBaseQuery()
+	q := NewQuery()
 	q.FindById(id)
 
 	c.Assert(q.GetCriteria()["_id"], Equals, id)

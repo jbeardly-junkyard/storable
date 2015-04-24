@@ -4,26 +4,24 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type Query interface {
-	GetCriteria() bson.M
+type Query struct {
+	criteria    bson.M
+	Limit, Skip int
+	Sort        Sort
 }
 
-type BaseQuery struct {
-	criteria bson.M
+func NewQuery() *Query {
+	return &Query{criteria: make(bson.M, 0)}
 }
 
-func NewBaseQuery() *BaseQuery {
-	return &BaseQuery{criteria: make(bson.M, 0)}
+func (q *Query) FindById(id bson.ObjectId) {
+	q.AddCriteria(IdField, id)
 }
 
-func (q *BaseQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria("_id", id)
+func (q *Query) AddCriteria(key Field, val interface{}) {
+	q.criteria[key.String()] = val
 }
 
-func (q *BaseQuery) AddCriteria(key string, val interface{}) {
-	q.criteria[key] = val
-}
-
-func (q *BaseQuery) GetCriteria() bson.M {
+func (q *Query) GetCriteria() bson.M {
 	return q.criteria
 }

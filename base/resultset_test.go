@@ -9,7 +9,7 @@ func (s *BaseSuite) TestResultSet_All(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	r, err := st.Find(NewBaseQuery())
+	r, err := st.Find(NewQuery())
 	c.Assert(err, IsNil)
 
 	var result []*Person
@@ -24,7 +24,7 @@ func (s *BaseSuite) TestResultSet_One(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	r, err := st.Find(NewBaseQuery())
+	r, err := st.Find(NewQuery())
 	c.Assert(err, IsNil)
 
 	var result *Person
@@ -40,7 +40,7 @@ func (s *BaseSuite) TestResultSet_Next(c *C) {
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
-	r, err := st.Find(NewBaseQuery())
+	r, err := st.Find(NewQuery())
 	c.Assert(err, IsNil)
 
 	var result *Person
@@ -53,7 +53,7 @@ func (s *BaseSuite) TestResultSet_Next(c *C) {
 
 func (s *BaseSuite) TestResultSet_Close(c *C) {
 	st := NewStore(s.conn, "test")
-	r, _ := st.Find(NewBaseQuery())
+	r, _ := st.Find(NewQuery())
 
 	c.Assert(r.Close(), IsNil)
 	c.Assert(r.Close(), Equals, ResultSetClosed)

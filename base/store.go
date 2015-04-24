@@ -55,15 +55,27 @@ func (s *Store) Delete(doc bongo.Document) error {
 	return s.coll.DeleteDocument(doc)
 }
 
-func (s *Store) Find(query Query) (*ResultSet, error) {
-	resultSet := s.coll.Find(query.GetCriteria())
+func (s *Store) Find(q *Query) (*ResultSet, error) {
+	resultSet := s.coll.Find(q.GetCriteria())
 	if resultSet.Error != nil {
 		return nil, resultSet.Error
+	}
+
+	if !q.Sort.IsEmpty() {
+		resultSet.Query.Sort(q.Sort.String())
+	}
+
+	if q.Skip != 0 {
+		resultSet.Query.Skip(q.Skip)
+	}
+
+	if q.Limit != 0 {
+		resultSet.Query.Limit(q.Limit)
 	}
 
 	return &ResultSet{rs: resultSet}, nil
 }
 
-func (s *Store) RawUpdate(query Query, update interface{}) error {
+func (s *Store) RawUpdate(query *Query, update interface{}) error {
 	return s.coll.Collection().Update(query.GetCriteria(), update)
 }
