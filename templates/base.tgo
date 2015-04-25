@@ -8,3 +8,6 @@ import (
 {{ range .Models }}
   {{ template "model" .}}
 {{ end }}
+
+
+{{ template "schema" .}}

@@ -67,6 +67,7 @@ func addTemplate(base *template.Template, name string, filename string) *templat
 }
 
 var base *template.Template = makeTemplate("base", "templates/base.tgo")
+var schema *template.Template = addTemplate(base, "schema", "templates/schema.tgo")
 var model *template.Template = addTemplate(base, "model", "templates/model.tgo")
 var query *template.Template = addTemplate(model, "query", "templates/query.tgo")
 var resultset *template.Template = addTemplate(model, "resultset", "templates/resultset.tgo")

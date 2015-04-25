@@ -16,11 +16,17 @@ import (
 const BaseDocument = "github.com/maxwellhealth/bongo.DocumentBase"
 
 type Processor struct {
-	Path string
+	Path   string
+	Ignore map[string]bool
 }
 
-func NewProcessor(path string) *Processor {
-	return &Processor{Path: path}
+func NewProcessor(path string, ignore []string) *Processor {
+	i := make(map[string]bool, 0)
+	for _, file := range ignore {
+		i[file] = true
+	}
+
+	return &Processor{Path: path, Ignore: i}
 }
 
 func (p *Processor) Do() (string, []*Model, error) {
@@ -58,6 +64,10 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 	var files []*ast.File
 	fs := token.NewFileSet()
 	for _, filename := range filenames {
+		if _, ok := p.Ignore[filename]; ok {
+			continue
+		}
+
 		file, err := parser.ParseFile(fs, filename, nil, 0)
 		if err != nil {
 			return nil, fmt.Errorf("parsing package: %s: %s", filename, err)
@@ -76,18 +86,12 @@ func (p *Processor) processPackage(pkg *types.Package) []*Model {
 	s := pkg.Scope()
 	r := make([]*Model, 0)
 	for _, name := range s.Names() {
-		obj := s.Lookup(name)
-		named, ok := obj.Type().(*types.Named)
-		if !ok {
+		str := p.tryGetStruct(s.Lookup(name).Type())
+		if str == nil {
 			continue
 		}
 
-		str, ok := named.Underlying().(*types.Struct)
-		if !ok {
-			continue
-		}
-
-		if m := p.procesStruct(name, str); m != nil {
+		if m := p.processStruct(name, str); m != nil {
 			r = append(r, m)
 		}
 	}
@@ -95,36 +99,63 @@ func (p *Processor) processPackage(pkg *types.Package) []*Model {
 	return r
 }
 
-func (p *Processor) procesStruct(name string, s *types.Struct) *Model {
-	m := NewModel(name)
-
-	isValid := false
-	for i := 0; i < s.NumFields(); i++ {
-		f := s.Field(i)
-		t := reflect.StructTag(s.Tag(i))
-
-		if f.Type().String() == BaseDocument {
-			p.procesBaseField(m, f, t)
-			isValid = true
-		}
-
-		m.Fields = append(m.Fields, &Field{
-			Name: f.Name(),
-			Type: f.Type().String(),
-			Tag:  t,
-		})
-
-	}
-
-	if isValid {
-		return m
+func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
+	switch t := typ.(type) {
+	case *types.Named:
+		return p.tryGetStruct(t.Underlying())
+	case *types.Pointer:
+		return p.tryGetStruct(t.Elem())
+	case *types.Struct:
+		return t
 	}
 
 	return nil
 }
 
-func (p *Processor) procesBaseField(m *Model, f *types.Var, t reflect.StructTag) {
-	m.Collection = t.Get("collection")
+func (p *Processor) processStruct(name string, s *types.Struct) *Model {
+	m := NewModel(name)
+
+	var base int
+	if base, m.Fields = p.getFields(s); base == -1 {
+		return nil
+	}
+
+	p.procesBaseField(m, m.Fields[base])
+	fmt.Println(m)
+	return m
+}
+
+func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
+	c := s.NumFields()
+
+	base = -1
+	fields = make([]*Field, c)
+
+	for i := 0; i < c; i++ {
+		f := s.Field(i)
+		t := reflect.StructTag(s.Tag(i))
+
+		if f.Type().String() == BaseDocument {
+			base = i
+		}
+
+		fields[i] = &Field{
+			Name: f.Name(),
+			Type: f.Type().String(),
+			Tag:  t,
+		}
+
+		str := p.tryGetStruct(f.Type())
+		if f.Type().String() != BaseDocument && str != nil {
+			_, fields[i].Fields = p.getFields(str)
+		}
+	}
+
+	return
+}
+
+func (p *Processor) procesBaseField(m *Model, f *Field) {
+	m.Collection = f.Tag.Get("collection")
 }
 
 func joinDirectory(directory string, files []string) []string {

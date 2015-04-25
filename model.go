@@ -20,6 +20,7 @@ var findableTypes = map[string]bool{
 	"uint64":  true,
 	"float32": true,
 	"float64": true,
+	"struct":  true,
 }
 
 type Model struct {
@@ -28,9 +29,9 @@ type Model struct {
 	Fields     []*Field
 }
 
-func NewModel(name string) *Model {
+func NewModel(n string) *Model {
 	return &Model{
-		Name:   name,
+		Name:   n,
 		Fields: make([]*Field, 0),
 	}
 }
@@ -38,11 +39,11 @@ func NewModel(name string) *Model {
 func (m *Model) String() string {
 	fields := make([]string, 0)
 	for _, f := range m.Fields {
-		fields = append(fields, f.String())
+		fields = append(fields, "\t"+f.String()+"\n")
 	}
 
-	fieldsStr := strings.Join(fields, ", ")
-	str := fmt.Sprintf("(Model '%s' [ %s ]", m.Name, fieldsStr)
+	fieldsStr := strings.Join(fields, "")
+	str := fmt.Sprintf("(Model '%s' [\n %s]", m.Name, fieldsStr)
 
 	return str
 }
@@ -59,13 +60,29 @@ func (m *Model) FindableFields() []*Field {
 }
 
 type Field struct {
-	Name string
-	Type string
-	Tag  reflect.StructTag
+	Name   string
+	Type   string
+	Tag    reflect.StructTag
+	Fields []*Field
+}
+
+func NewField(n string, t string) *Field {
+	return &Field{
+		Name:   n,
+		Type:   t,
+		Fields: make([]*Field, 0),
+	}
 }
 
 func (f *Field) String() string {
-	return fmt.Sprintf("%s %s %s", f.Name, f.Type, f.Tag)
+	fields := make([]string, 0)
+	for _, f := range f.Fields {
+		fields = append(fields, f.String())
+	}
+
+	fieldsStr := strings.Join(fields, ", ")
+
+	return fmt.Sprintf("%s %s %s [%s]", f.Name, f.Type, f.Tag, fieldsStr)
 }
 func (f *Field) GetTagValue(key string) string {
 	if f.Tag == "" {

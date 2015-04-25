@@ -19,7 +19,7 @@ func (c *CmdGenerate) Execute(args []string) error {
 		return fmt.Errorf("Input path should be a directory %s", c.Input)
 	}
 
-	p := mongogen.NewProcessor(c.Input)
+	p := mongogen.NewProcessor(c.Input, []string{c.Output})
 	name, models, err := p.Do()
 	if err != nil {
 		return nil
