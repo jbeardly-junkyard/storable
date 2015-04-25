@@ -2,10 +2,13 @@ package mongogen
 
 import (
 	"bytes"
+	"go/build"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"io"
+	"os"
+	"path/filepath"
 	"text/template"
 )
 
@@ -39,12 +42,18 @@ func prettyfy(src string, wr io.Writer) error {
 }
 
 func loadTemplateText(filename string) string {
-	text, err := Asset(filename)
+	filename = filepath.Join(build.Default.GOPATH, "src/github.com/tyba/mongogen", filename)
+	f, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 
-	return string(text)
+	buf := bytes.NewBuffer(nil)
+	if _, err := buf.ReadFrom(f); err != nil {
+		panic(err)
+	}
+
+	return buf.String()
 }
 
 func makeTemplate(name string, filename string) *template.Template {

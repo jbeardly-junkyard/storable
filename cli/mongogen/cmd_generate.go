@@ -7,29 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/tyba/mongogen"
-
-	"github.com/jessevdk/go-flags"
 )
-
-func main() {
-	parser := flags.NewNamedParser("mongogen", flags.Default)
-	parser.AddCommand(
-		"gen",
-		"Generate files for types using mongogen document.",
-		"",
-		&CmdGenerate{},
-	)
-
-	_, err := parser.Parse()
-	if err != nil {
-		if e, ok := err.(*flags.Error); ok && e.Type == flags.ErrCommandRequired {
-			parser.WriteHelp(os.Stdout)
-		}
-
-		os.Exit(1)
-	}
-
-}
 
 type CmdGenerate struct {
 	Input  string `short:"" long:"input" description:"input package directory" default:"."`

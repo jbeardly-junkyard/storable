@@ -97,18 +97,21 @@ func (p *Processor) processPackage(pkg *types.Package) []*Model {
 
 func (p *Processor) procesStruct(name string, s *types.Struct) *Model {
 	m := NewModel(name)
+
 	isValid := false
 	for i := 0; i < s.NumFields(); i++ {
 		f := s.Field(i)
+		t := reflect.StructTag(s.Tag(i))
 
 		if f.Type().String() == BaseDocument {
+			p.procesBaseField(m, f, t)
 			isValid = true
 		}
 
 		m.Fields = append(m.Fields, &Field{
 			Name: f.Name(),
 			Type: f.Type().String(),
-			Tag:  reflect.StructTag(s.Tag(i)),
+			Tag:  t,
 		})
 
 	}
@@ -118,6 +121,10 @@ func (p *Processor) procesStruct(name string, s *types.Struct) *Model {
 	}
 
 	return nil
+}
+
+func (p *Processor) procesBaseField(m *Model, f *types.Var, t reflect.StructTag) {
+	m.Collection = t.Get("collection")
 }
 
 func joinDirectory(directory string, files []string) []string {

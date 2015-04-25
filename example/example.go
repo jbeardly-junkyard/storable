@@ -2,7 +2,7 @@ package example
 
 import "github.com/maxwellhealth/bongo"
 
-//go:generate mongogen -input=$GOFILE
+//go:generate mongogen gen
 
 type MyModel struct {
 	bongo.DocumentBase `bson:",inline" collection:"my_model"`
