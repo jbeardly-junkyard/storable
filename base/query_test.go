@@ -7,7 +7,7 @@ import (
 
 func (s *BaseSuite) TestBaseQuery_AddCriteria(c *C) {
 	q := NewBaseQuery()
-	q.AddCriteria("foo", "bar")
+	q.AddCriteria(NewField("foo"), "bar")
 
 	c.Assert(q.GetCriteria()["foo"], Equals, "bar")
 }

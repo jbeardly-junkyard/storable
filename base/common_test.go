@@ -27,18 +27,18 @@ func (s *BaseSuite) SetUpTest(c *C) {
 }
 
 func (s *BaseSuite) TestSort_String(c *C) {
-	sort := Sort{{Field("foo"), Asc}}
+	sort := Sort{{Field{"foo"}, Asc}}
 	c.Assert(sort.String(), Equals, "foo")
 
-	sort = Sort{{Field("foo"), Desc}}
+	sort = Sort{{Field{"foo"}, Desc}}
 	c.Assert(sort.String(), Equals, "-foo")
 
-	sort = Sort{{Field("foo"), Asc}, {Field("qux"), Desc}}
+	sort = Sort{{Field{"foo"}, Asc}, {Field{"qux"}, Desc}}
 	c.Assert(sort.String(), Equals, "foo,-qux")
 }
 
 func (s *BaseSuite) TestSort_IsEmpty(c *C) {
-	sort := Sort{{Field("foo"), Asc}}
+	sort := Sort{{Field{"foo"}, Asc}}
 	c.Assert(sort.IsEmpty(), Equals, false)
 
 	sort = Sort{}

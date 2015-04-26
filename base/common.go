@@ -4,14 +4,20 @@ import (
 	"strings"
 )
 
-type Field string
-
-func (f Field) String() string {
-	return string(f)
+type Field struct {
+	bson string
 }
 
-const (
-	IdField Field = "_id"
+func NewField(name string) Field {
+	return Field{name}
+}
+
+func (f Field) String() string {
+	return f.bson
+}
+
+var (
+	IdField = NewField("_id")
 )
 
 type Dir int
