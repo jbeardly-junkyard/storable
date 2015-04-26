@@ -139,16 +139,16 @@ func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 			base = i
 		}
 
-		fields[i] = &Field{
-			Name: f.Name(),
-			Type: f.Type().String(),
-			Tag:  t,
-		}
+		field := NewField(f.Name(), f.Type().String(), t)
 
 		str := p.tryGetStruct(f.Type())
 		if f.Type().String() != BaseDocument && str != nil {
-			_, fields[i].Fields = p.getFields(str)
+			_, subfields := p.getFields(str)
+			field.SetFields(subfields)
+			field.Type = "struct"
 		}
+
+		fields[i] = field
 	}
 
 	return

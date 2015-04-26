@@ -22,11 +22,14 @@ func (c *CmdGenerate) Execute(args []string) error {
 	p := mongogen.NewProcessor(c.Input, []string{c.Output})
 	name, models, err := p.Do()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	gen := mongogen.NewGenerator(filepath.Join(c.Input, c.Output))
-	gen.Generate(name, models)
+	err = gen.Generate(name, models)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

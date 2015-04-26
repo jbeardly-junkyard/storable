@@ -1,0 +1,29 @@
+
+type schema struct {
+{{range .Models}}{{template "schemaDef" .}}
+{{end}}
+}
+
+{{define "schemaDef"}}{{.Name}} {{if .ValidFields}}{{.Type}}{
+    {{range .ValidFields}}{{template "schemaDef" .}}
+    {{end}}
+}{{else}}base.Field{{end}}{{end}}
+
+var Schema = schema{
+{{range .Models}}{{template "schemaVar" .}}
+{{end}}
+}
+
+{{define "schemaVar"}}\
+    {{if eq .Type "struct"}}{{template "schemaVarDef" .}}{
+        {{range .ValidFields}}{{template "schemaVar" .}}{{end}}
+    },
+    {{else}}\
+    {{.Name}}: "{{.GetPath}}",
+    {{end}}\
+{{end}}
+
+{{define "schemaVarDef"}}{{.Name}}: struct{{if .ValidFields}}{
+    {{range .ValidFields}}{{template "schemaDef" .}}
+    {{end}}
+}{{end}}{{end}}

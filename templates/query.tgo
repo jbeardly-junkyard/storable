@@ -3,9 +3,9 @@ type {{ .Name }}Query struct {
 	base.BaseQuery
 }
 {{ $modelName := .Name }}
-{{ range .FindableFields }}
+{{ range .ValidFields }}{{if ne .FindableType "struct"}}
 func (q *{{ $modelName }}Query) FindBy{{ .Name }}(value {{ .FindableType }}) {
 	q.AddCriteria("{{ .DbName}}", value)
 }
-{{ end }}
+{{ end }}{{end}}
 

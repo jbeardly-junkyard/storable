@@ -51,3 +51,14 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	c.Assert(one, IsNil)
 	c.Assert(err, IsNil)
 }
+
+func (s *MongoSuite) TestSchema(c *C) {
+	c.Assert(Schema.MyModel.Foo.String(), Equals, "foo")
+	c.Assert(Schema.MyModel.Bar.String(), Equals, "bla2")
+	c.Assert(Schema.MyModel.Nested.X.String(), Equals, "nested.x")
+	c.Assert(Schema.MyModel.Nested.Another.X.String(), Equals, "nested.another.x")
+}
+
+func (s *MongoSuite) TearDownTest(c *C) {
+	s.conn.Session.DB(testDatabase).DropDatabase()
+}

@@ -2,13 +2,13 @@ package mongogen
 
 import (
 	"bytes"
+	"fmt"
 	"go/build"
-	"go/parser"
-	"go/printer"
-	"go/token"
+	"go/format"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -23,22 +23,23 @@ type Template struct {
 
 func (t *Template) Execute(wr io.Writer, data interface{}) error {
 	var buf bytes.Buffer
+
 	err := t.template.Execute(&buf, data)
 	if err != nil {
 		return err
 	}
 
-	return prettyfy(buf.String(), wr)
+	return prettyfy(buf.Bytes(), wr)
 }
 
-func prettyfy(src string, wr io.Writer) error {
-	fs := token.NewFileSet()
-	file, err := parser.ParseFile(fs, "irrelevant", src, parser.ParseComments)
+func prettyfy(input []byte, wr io.Writer) error {
+	output, err := format.Source(input)
 	if err != nil {
 		return err
 	}
 
-	return printer.Fprint(wr, fs, file)
+	_, err = wr.Write(output)
+	return err
 }
 
 func loadTemplateText(filename string) string {
@@ -53,7 +54,7 @@ func loadTemplateText(filename string) string {
 		panic(err)
 	}
 
-	return buf.String()
+	return strings.Replace(buf.String(), "\\\n", " ", -1)
 }
 
 func makeTemplate(name string, filename string) *template.Template {
@@ -63,6 +64,9 @@ func makeTemplate(name string, filename string) *template.Template {
 
 func addTemplate(base *template.Template, name string, filename string) *template.Template {
 	text := loadTemplateText(filename)
+	if filename == "templates/schema.tgo" {
+		fmt.Println(string(text))
+	}
 	return template.Must(base.New(name).Parse(text))
 }
 
