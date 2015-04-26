@@ -5,9 +5,9 @@ import (
     "github.com/tyba/mongogen/base"
 )
 
-{{ range .Models }}
-  {{ template "model" .}}
-{{ end }}
+{{range .Models}}
+  {{template "model" .}}
+{{end}}
 
 
-{{ template "schema" .}}
+{{template "schema" .}}

@@ -1,11 +1,12 @@
 
-type {{ .Name }}Query struct {
+type {{.Name}}Query struct {
 	base.BaseQuery
 }
-{{ $modelName := .Name }}
-{{ range .ValidFields }}{{if ne .FindableType "struct"}}
-func (q *{{ $modelName }}Query) FindBy{{ .Name }}(value {{ .FindableType }}) {
-	q.AddCriteria("{{ .DbName}}", value)
+
+{{$modelName := .Name}}
+{{range .ValidFields}}{{if ne .FindableType "struct"}}
+func (q *{{ $modelName }}Query) FindBy{{.Name}}(value {{.FindableType}}) {
+	q.AddCriteria(Schema.{{$modelName}}.{{.Name}}, value)
 }
-{{ end }}{{end}}
+{{end}}{{end}}
 

@@ -19,7 +19,7 @@ var Schema = schema{
         {{range .ValidFields}}{{template "schemaVar" .}}{{end}}
     },
     {{else}}\
-    {{.Name}}: "{{.GetPath}}",
+    {{.Name}}: base.NewField("{{.GetPath}}"),
     {{end}}\
 {{end}}
 

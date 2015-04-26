@@ -1,24 +1,24 @@
 
-type {{ .Name }}ResultSet struct {
+type {{.Name}}ResultSet struct {
     base.ResultSet
 }
 
-func (r *{{ .Name }}ResultSet) All() ([]*{{ .Name }}, error) {
-    var result []*{{ .Name }}
+func (r *{{.Name}}ResultSet) All() ([]*{{.Name}}, error) {
+    var result []*{{.Name}}
     err := r.ResultSet.All(&result)
 
     return result, err
 }
 
-func (r *{{ .Name }}ResultSet) One() (*{{ .Name }}, error) {
-    var result *{{ .Name }}
+func (r *{{.Name}}ResultSet) One() (*{{.Name}}, error) {
+    var result *{{.Name}}
     _, err := r.ResultSet.One(&result)
 
     return result, err
 }
 
-func (r *{{ .Name }}ResultSet) Next() (*{{ .Name }}, error) {
-    var result *{{ .Name }}
+func (r *{{.Name}}ResultSet) Next() (*{{.Name}}, error) {
+    var result *{{.Name}}
     _, err := r.ResultSet.Next(&result)
 
     return result, err
