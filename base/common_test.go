@@ -4,26 +4,25 @@ import (
 	"testing"
 
 	. "gopkg.in/check.v1"
-	"gopkg.in/maxwellhealth/bongo.v0"
+	"gopkg.in/mgo.v2"
 )
 
 const (
-	testDatabase = "mongogen-test"
+	testMongoHost = "localhost"
+	testDatabase  = "mongogen-test"
 )
 
 func Test(t *testing.T) { TestingT(t) }
 
 type BaseSuite struct {
-	conn *bongo.Connection
+	db *mgo.Database
 }
 
 var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpTest(c *C) {
-	s.conn, _ = bongo.Connect(&bongo.Config{
-		ConnectionString: "localhost",
-		Database:         testDatabase,
-	})
+	conn, _ := mgo.Dial(testMongoHost)
+	s.db = conn.DB(testDatabase)
 }
 
 func (s *BaseSuite) TestSort_String(c *C) {
@@ -46,12 +45,12 @@ func (s *BaseSuite) TestSort_IsEmpty(c *C) {
 }
 
 func (s *BaseSuite) TearDownTest(c *C) {
-	s.conn.Session.DB(testDatabase).DropDatabase()
+	s.db.DropDatabase()
 }
 
 type Person struct {
-	bongo.DocumentBase `bson:",inline"`
-	FirstName          string
-	LastName           string
-	Gender             string
+	Document  `bson:",inline"`
+	FirstName string
+	LastName  string
+	Gender    string
 }

@@ -3,8 +3,8 @@ type {{.Name}}Store struct {
 	base.Store
 }
 
-func New{{.Name}}Store(conn *bongo.Connection) *{{.Name}}Store {
-	return &{{.Name}}Store{*base.NewStore(conn, "{{ .Collection }}")}
+func New{{.Name}}Store(db *mgo.Database) *{{.Name}}Store {
+	return &{{.Name}}Store{*base.NewStore(db, "{{ .Collection }}")}
 }
 
 func (s *{{.Name}}Store) New() *{{.Name}} {

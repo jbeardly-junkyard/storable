@@ -7,7 +7,7 @@ import (
 
 func (s *BaseSuite) TestStore_Insert(c *C) {
 	p := &Person{FirstName: "foo"}
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	err := st.Insert(p)
 	c.Assert(err, IsNil)
 	c.Assert(p.IsNew(), Equals, false)
@@ -23,7 +23,7 @@ func (s *BaseSuite) TestStore_Insert(c *C) {
 
 func (s *BaseSuite) TestStore_InsertOld(c *C) {
 	p := &Person{FirstName: "foo"}
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	err := st.Insert(p)
 	c.Assert(err, IsNil)
 
@@ -34,7 +34,7 @@ func (s *BaseSuite) TestStore_InsertOld(c *C) {
 func (s *BaseSuite) TestStore_Update(c *C) {
 	p := &Person{FirstName: "foo"}
 
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(p)
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -56,7 +56,7 @@ func (s *BaseSuite) TestStore_Update(c *C) {
 
 func (s *BaseSuite) TestStore_UpdateNew(c *C) {
 	p := &Person{FirstName: "foo"}
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 
 	err := st.Update(p)
 	c.Assert(err, Equals, NewDocumentErr)
@@ -64,7 +64,7 @@ func (s *BaseSuite) TestStore_UpdateNew(c *C) {
 
 func (s *BaseSuite) TestStore_Delete(c *C) {
 	p := &Person{FirstName: "foo"}
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(p)
 
 	err := st.Delete(p)
@@ -79,7 +79,7 @@ func (s *BaseSuite) TestStore_Delete(c *C) {
 }
 
 func (s *BaseSuite) TestStore_FindLimit(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -95,7 +95,7 @@ func (s *BaseSuite) TestStore_FindLimit(c *C) {
 }
 
 func (s *BaseSuite) TestStore_FindSkip(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -111,7 +111,7 @@ func (s *BaseSuite) TestStore_FindSkip(c *C) {
 }
 
 func (s *BaseSuite) TestStore_FindSort(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -128,7 +128,7 @@ func (s *BaseSuite) TestStore_FindSort(c *C) {
 }
 
 func (s *BaseSuite) TestStore_RawUpdate(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 

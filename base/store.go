@@ -3,7 +3,8 @@ package base
 import (
 	"errors"
 
-	"gopkg.in/maxwellhealth/bongo.v0"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var (
@@ -14,68 +15,60 @@ var (
 type Store struct {
 	Collection string
 
-	conn *bongo.Connection
-	coll *bongo.Collection
+	collection *mgo.Collection
 }
 
-func NewStore(conn *bongo.Connection, collection string) *Store {
+func NewStore(db *mgo.Database, collection string) *Store {
 	return &Store{
 		Collection: collection,
-		conn:       conn,
-		coll:       conn.Collection(collection),
+		collection: db.C(collection),
 	}
 }
 
-func (s *Store) Insert(doc bongo.Document) error {
-	if !s.isNew(doc) {
+func (s *Store) Insert(doc DocumentBase) error {
+	if !doc.IsNew() {
 		return NonNewDocumentErr
 	}
 
-	return s.coll.Save(doc)
+	doc.SetId(bson.NewObjectId())
+	err := s.collection.Insert(doc)
+	if err == nil {
+		doc.SetIsNew(false)
+	}
+
+	return err
 }
 
-func (s *Store) Update(doc bongo.Document) error {
-	if s.isNew(doc) {
+func (s *Store) Update(doc DocumentBase) error {
+	if doc.IsNew() {
 		return NewDocumentErr
 	}
 
-	return s.coll.Save(doc)
+	return s.collection.Update(bson.M{"_id": doc.GetId()}, doc)
 }
 
-func (s *Store) isNew(doc bongo.Document) bool {
-	isNew := true
-	if newt, ok := doc.(bongo.NewTracker); ok {
-		isNew = newt.IsNew()
-	}
-
-	return isNew
-}
-
-func (s *Store) Delete(doc bongo.Document) error {
-	return s.coll.DeleteDocument(doc)
+func (s *Store) Delete(doc DocumentBase) error {
+	return s.collection.Remove(bson.M{"_id": doc.GetId()})
 }
 
 func (s *Store) Find(q Query) (*ResultSet, error) {
-	resultSet := s.coll.Find(q.GetCriteria())
-	if resultSet.Error != nil {
-		return nil, resultSet.Error
-	}
+	mq := s.collection.Find(q.GetCriteria())
 
 	if !q.GetSort().IsEmpty() {
-		resultSet.Query.Sort(q.GetSort().String())
+		mq.Sort(q.GetSort().String())
 	}
 
 	if q.GetSkip() != 0 {
-		resultSet.Query.Skip(q.GetSkip())
+		mq.Skip(q.GetSkip())
 	}
 
 	if q.GetLimit() != 0 {
-		resultSet.Query.Limit(q.GetLimit())
+		mq.Limit(q.GetLimit())
 	}
 
-	return &ResultSet{rs: resultSet}, nil
+	return &ResultSet{mgoQuery: mq}, nil
 }
 
 func (s *Store) RawUpdate(query Query, update interface{}) error {
-	return s.coll.Collection().Update(query.GetCriteria(), update)
+	return s.collection.Update(query.GetCriteria(), update)
 }

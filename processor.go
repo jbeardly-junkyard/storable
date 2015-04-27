@@ -13,7 +13,7 @@ import (
 	"golang.org/x/tools/go/types"
 )
 
-const BaseDocument = "github.com/maxwellhealth/bongo.DocumentBase"
+const BaseDocument = "github.com/tyba/mongogen/base.Document"
 
 type Processor struct {
 	Path   string

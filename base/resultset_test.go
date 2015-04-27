@@ -5,7 +5,7 @@ import (
 )
 
 func (s *BaseSuite) TestResultSet_All(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -20,7 +20,7 @@ func (s *BaseSuite) TestResultSet_All(c *C) {
 }
 
 func (s *BaseSuite) TestResultSet_One(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -36,7 +36,7 @@ func (s *BaseSuite) TestResultSet_One(c *C) {
 }
 
 func (s *BaseSuite) TestResultSet_Next(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
 	st.Insert(&Person{FirstName: "bar"})
 
@@ -45,14 +45,13 @@ func (s *BaseSuite) TestResultSet_Next(c *C) {
 
 	var result *Person
 	f, err := r.Next(&result)
-
 	c.Assert(err, IsNil)
 	c.Assert(f, Equals, true)
 	c.Assert(r.IsClosed, Equals, false)
 }
 
 func (s *BaseSuite) TestResultSet_Close(c *C) {
-	st := NewStore(s.conn, "test")
+	st := NewStore(s.db, "test")
 	r, _ := st.Find(NewBaseQuery())
 
 	c.Assert(r.Close(), IsNil)

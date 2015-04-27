@@ -1,11 +1,11 @@
 package example
 
-import "github.com/maxwellhealth/bongo"
+import "github.com/tyba/mongogen/base"
 
 //go:generate mongogen gen
 
 type MyModel struct {
-	bongo.DocumentBase `bson:",inline" collection:"my_model"`
+	base.Document `bson:",inline" collection:"my_model"`
 
 	Foo       string
 	Bar       int `bson:"bla2"`
@@ -26,9 +26,9 @@ type AnotherType struct { // not generated
 }
 
 type AnotherModel struct {
-	bongo.DocumentBase `bson:",inline" collection:"another_model"`
-	Foo                float64
-	Bar                string
+	base.Document `bson:",inline" collection:"another_model"`
+	Foo           float64
+	Bar           string
 }
 
 func (m *MyModel) IrrelevantFunction() {

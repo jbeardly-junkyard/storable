@@ -4,30 +4,29 @@ import (
 	"testing"
 
 	. "gopkg.in/check.v1"
-	"gopkg.in/maxwellhealth/bongo.v0"
+	"gopkg.in/mgo.v2"
 )
 
 const (
-	testDatabase = "mongogen-test"
+	testMongoHost = "localhost"
+	testDatabase  = "mongogen-test"
 )
 
 func Test(t *testing.T) { TestingT(t) }
 
 type MongoSuite struct {
-	conn *bongo.Connection
+	db *mgo.Database
 }
 
 var _ = Suite(&MongoSuite{})
 
 func (s *MongoSuite) SetUpTest(c *C) {
-	s.conn, _ = bongo.Connect(&bongo.Config{
-		ConnectionString: "localhost",
-		Database:         testDatabase,
-	})
+	conn, _ := mgo.Dial(testMongoHost)
+	s.db = conn.DB(testDatabase)
 }
 
 func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
-	store := NewMyModelStore(s.conn)
+	store := NewMyModelStore(s.db)
 	m := store.New()
 	m.Foo = "foo"
 
@@ -60,5 +59,5 @@ func (s *MongoSuite) TestSchema(c *C) {
 }
 
 func (s *MongoSuite) TearDownTest(c *C) {
-	s.conn.Session.DB(testDatabase).DropDatabase()
+	s.db.DropDatabase()
 }

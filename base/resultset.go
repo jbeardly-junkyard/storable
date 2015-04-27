@@ -3,7 +3,7 @@ package base
 import (
 	"errors"
 
-	"gopkg.in/maxwellhealth/bongo.v0"
+	"gopkg.in/mgo.v2"
 )
 
 var (
@@ -12,12 +12,13 @@ var (
 
 type ResultSet struct {
 	IsClosed bool
-	rs       *bongo.ResultSet
+	mgoQuery *mgo.Query
+	mgoIter  *mgo.Iter
 }
 
 func (r *ResultSet) All(result interface{}) error {
 	defer r.Close()
-	return r.rs.Query.All(result)
+	return r.mgoQuery.All(result)
 }
 
 func (r *ResultSet) One(doc interface{}) (bool, error) {
@@ -26,12 +27,16 @@ func (r *ResultSet) One(doc interface{}) (bool, error) {
 }
 
 func (r *ResultSet) Next(doc interface{}) (bool, error) {
-	returned := r.rs.Next(doc)
-	if r.rs.Error != nil {
-		return false, r.rs.Error
+	if r.mgoIter == nil {
+		r.mgoIter = r.mgoQuery.Iter()
 	}
 
-	return returned, nil
+	returned := r.mgoIter.Next(doc)
+	if base, ok := doc.(DocumentBase); ok && returned {
+		base.SetIsNew(false)
+	}
+
+	return returned, r.mgoIter.Err()
 }
 
 func (r *ResultSet) Close() error {
@@ -40,5 +45,9 @@ func (r *ResultSet) Close() error {
 	}
 
 	r.IsClosed = true
-	return r.rs.Free()
+	if r.mgoIter == nil {
+		return nil
+	}
+
+	return r.mgoIter.Close()
 }
