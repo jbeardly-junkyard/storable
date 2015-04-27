@@ -3,6 +3,10 @@ type {{.Name}}Query struct {
 	base.BaseQuery
 }
 
+func (q *BaseQuery) FindById(id bson.ObjectId) {
+    q.AddCriteria(IdField, id)
+}
+
 {{$modelName := .Name}}
 {{range .ValidFields}}{{if ne .FindableType "struct"}}
 func (q *{{ $modelName }}Query) FindBy{{.Name}}(value {{.FindableType}}) {

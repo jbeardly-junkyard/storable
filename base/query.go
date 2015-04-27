@@ -21,10 +21,6 @@ func NewBaseQuery() *BaseQuery {
 	return &BaseQuery{criteria: make(bson.M, 0)}
 }
 
-func (q *BaseQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria(IdField, id)
-}
-
 func (q *BaseQuery) AddCriteria(key Field, val interface{}) {
 	q.criteria[key.String()] = val
 }

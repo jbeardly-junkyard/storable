@@ -6,10 +6,15 @@ import (
 
 type Field struct {
 	bson string
+	typ  string
 }
 
-func NewField(name string) Field {
-	return Field{name}
+func NewField(name, typ string) Field {
+	return Field{name, typ}
+}
+
+func (f Field) Type() string {
+	return f.typ
 }
 
 func (f Field) String() string {
@@ -17,7 +22,7 @@ func (f Field) String() string {
 }
 
 var (
-	IdField = NewField("_id")
+	IdField = NewField("_id", "bson.ObjectId")
 )
 
 type Dir int

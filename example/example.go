@@ -7,11 +7,13 @@ import "github.com/tyba/mongogen/base"
 type MyModel struct {
 	base.Document `bson:",inline" collection:"my_model"`
 
-	Foo       string
-	Bar       int `bson:"bla2"`
-	Bytes     []byte
-	NestedRef *SomeType
-	Nested    SomeType
+	Foo         string
+	Bar         int `bson:"bla2"`
+	Bytes       []byte
+	Slice       []string
+	NestedRef   *SomeType
+	Nested      SomeType
+	NestedSlice []*SomeType
 }
 
 type SomeType struct { // not generated

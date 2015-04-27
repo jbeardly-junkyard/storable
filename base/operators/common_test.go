@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	Foo = base.NewField("foo")
+	Foo = base.NewField("foo", "")
 )
 
 func Test(t *testing.T) { check.TestingT(t) }

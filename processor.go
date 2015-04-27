@@ -105,6 +105,8 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 		return p.tryGetStruct(t.Underlying())
 	case *types.Pointer:
 		return p.tryGetStruct(t.Elem())
+	case *types.Slice:
+		return p.tryGetStruct(t.Elem())
 	case *types.Struct:
 		return t
 	}
