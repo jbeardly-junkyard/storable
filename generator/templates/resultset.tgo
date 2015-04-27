@@ -1,6 +1,6 @@
 
 type {{.Name}}ResultSet struct {
-    base.ResultSet
+    storable.ResultSet
 }
 
 func (r *{{.Name}}ResultSet) All() ([]*{{.Name}}, error) {

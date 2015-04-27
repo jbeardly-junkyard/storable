@@ -1,8 +1,9 @@
 package {{.Package}}
 
 import (
+    "github.com/tyba/storable"
     "gopkg.in/mgo.v2"
-    "github.com/tyba/mongogen/base"
+    "gopkg.in/mgo.v2/bson"
 )
 
 {{range .Models}}

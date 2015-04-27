@@ -9,7 +9,7 @@ import (
 
 const (
 	testMongoHost = "localhost"
-	testDatabase  = "mongogen-test"
+	testDatabase  = "storable-test"
 )
 
 func Test(t *testing.T) { TestingT(t) }

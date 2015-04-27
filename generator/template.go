@@ -1,8 +1,7 @@
-package mongogen
+package generator
 
 import (
 	"bytes"
-	"fmt"
 	"go/build"
 	"go/format"
 	"io"
@@ -43,7 +42,7 @@ func prettyfy(input []byte, wr io.Writer) error {
 }
 
 func loadTemplateText(filename string) string {
-	filename = filepath.Join(build.Default.GOPATH, "src/github.com/tyba/mongogen", filename)
+	filename = filepath.Join(build.Default.GOPATH, "src/github.com/tyba/storable/generator", filename)
 	f, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -64,9 +63,6 @@ func makeTemplate(name string, filename string) *template.Template {
 
 func addTemplate(base *template.Template, name string, filename string) *template.Template {
 	text := loadTemplateText(filename)
-	if filename == "templates/schema.tgo" {
-		fmt.Println(string(text))
-	}
 	return template.Must(base.New(name).Parse(text))
 }
 

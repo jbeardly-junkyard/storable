@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tyba/mongogen"
+	"github.com/tyba/storable/generator"
 )
 
 type CmdGenerate struct {
@@ -19,13 +19,13 @@ func (c *CmdGenerate) Execute(args []string) error {
 		return fmt.Errorf("Input path should be a directory %s", c.Input)
 	}
 
-	p := mongogen.NewProcessor(c.Input, []string{c.Output})
+	p := generator.NewProcessor(c.Input, []string{c.Output})
 	name, models, err := p.Do()
 	if err != nil {
 		return err
 	}
 
-	gen := mongogen.NewGenerator(filepath.Join(c.Input, c.Output))
+	gen := generator.NewGenerator(filepath.Join(c.Input, c.Output))
 	err = gen.Generate(name, models)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package mongogen
+package generator
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"golang.org/x/tools/go/types"
 )
 
-const BaseDocument = "github.com/tyba/mongogen/base.Document"
+const BaseDocument = "github.com/tyba/storable.Document"
 
 type Processor struct {
 	Path   string
@@ -123,7 +123,6 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	}
 
 	p.procesBaseField(m, m.Fields[base])
-	fmt.Println(m)
 	return m
 }
 

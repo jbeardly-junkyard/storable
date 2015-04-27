@@ -1,4 +1,4 @@
-package base
+package storable
 
 import (
 	. "gopkg.in/check.v1"

@@ -1,4 +1,4 @@
-package mongogen
+package generator
 
 import (
 	"io"

@@ -7,7 +7,7 @@ type schema struct {
 {{define "schemaDef"}}{{.Name}} {{if .ValidFields}}{{.Type}}{
     {{range .ValidFields}}{{template "schemaDef" .}}
     {{end}}
-}{{else}}base.Field{{end}}{{end}}
+}{{else}}storable.Field{{end}}{{end}}
 
 var Schema = schema{
 {{range .Models}}{{template "schemaVar" .}}
@@ -19,7 +19,7 @@ var Schema = schema{
         {{range .ValidFields}}{{template "schemaVar" .}}{{end}}
     },
     {{else}}\
-    {{.Name}}: base.NewField("{{.GetPath}}", "{{.FindableType}}"),
+    {{.Name}}: storable.NewField("{{.GetPath}}", "{{.FindableType}}"),
     {{end}}\
 {{end}}
 

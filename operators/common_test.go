@@ -3,14 +3,14 @@ package operators
 import (
 	"testing"
 
-	"github.com/tyba/mongogen/base"
+	"github.com/tyba/storable"
 
 	"gopkg.in/check.v1"
 	"gopkg.in/mgo.v2/bson"
 )
 
 var (
-	Foo = base.NewField("foo", "")
+	Foo = storable.NewField("foo", "")
 )
 
 func Test(t *testing.T) { check.TestingT(t) }

@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	parser := flags.NewNamedParser("mongogen", flags.Default)
+	parser := flags.NewNamedParser("storable", flags.Default)
 	parser.AddCommand(
 		"gen",
-		"Generate files for types using mongogen document.",
+		"Generate files for types using storable document.",
 		"",
 		&CmdGenerate{},
 	)

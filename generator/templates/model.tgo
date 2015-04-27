@@ -1,10 +1,10 @@
 
 type {{.Name}}Store struct {
-	base.Store
+	storable.Store
 }
 
 func New{{.Name}}Store(db *mgo.Database) *{{.Name}}Store {
-	return &{{.Name}}Store{*base.NewStore(db, "{{ .Collection }}")}
+	return &{{.Name}}Store{*storable.NewStore(db, "{{ .Collection }}")}
 }
 
 func (s *{{.Name}}Store) New() *{{.Name}} {
@@ -12,7 +12,7 @@ func (s *{{.Name}}Store) New() *{{.Name}} {
 }
 
 func (s *{{.Name}}Store) Query() *{{.Name}}Query {
-    return &{{.Name}}Query{*base.NewBaseQuery()}
+    return &{{.Name}}Query{*storable.NewBaseQuery()}
 }
 
 func (s *{{.Name}}Store) Find(query *{{.Name}}Query) (*{{.Name}}ResultSet, error) {

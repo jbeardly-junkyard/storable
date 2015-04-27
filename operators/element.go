@@ -1,7 +1,7 @@
 package operators
 
 import (
-	"github.com/tyba/mongogen/base"
+	"github.com/tyba/storable"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -31,11 +31,11 @@ const (
 )
 
 // Exists Matches documents that have the specified field.
-func Exists(field base.Field, exists bool) bson.M {
+func Exists(field storable.Field, exists bool) bson.M {
 	return bson.M{field.String(): bson.M{"$exists": exists}}
 }
 
 // Type Selects documents if a field is of the specified type.
-func Type(field base.Field, t BSONType) bson.M {
+func Type(field storable.Field, t BSONType) bson.M {
 	return bson.M{field.String(): bson.M{"$type": t}}
 }

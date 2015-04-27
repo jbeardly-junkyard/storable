@@ -1,4 +1,4 @@
-package mongogen
+package generator
 
 import (
 	"fmt"
@@ -138,7 +138,6 @@ func (f *Field) FindableType() string {
 }
 
 func (f *Field) Findable() bool {
-	fmt.Println(f.FindableType())
 	return findableTypes[f.FindableType()]
 }
 
