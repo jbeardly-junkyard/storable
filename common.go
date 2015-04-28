@@ -9,8 +9,8 @@ type Field struct {
 	typ  string
 }
 
-func NewField(name, typ string) Field {
-	return Field{name, typ}
+func NewField(bson, typ string) Field {
+	return Field{bson, typ}
 }
 
 func (f Field) Type() string {
@@ -19,6 +19,24 @@ func (f Field) Type() string {
 
 func (f Field) String() string {
 	return f.bson
+}
+
+type Map struct {
+	bson string
+	typ  string
+}
+
+func NewMap(bson, typ string) Map {
+	return Map{bson, typ}
+}
+
+func (f Map) Type() string {
+	return f.typ
+}
+
+func (f Map) Key(key string) Field {
+	bson := strings.Replace(f.bson, "[map]", key, -1)
+	return NewField(bson, f.typ)
 }
 
 var (

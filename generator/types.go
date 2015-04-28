@@ -21,6 +21,8 @@ var findableTypes = map[string]bool{
 	"float32": true,
 	"float64": true,
 	"struct":  true,
+	"bool":    true,
+	"map":     true,
 }
 
 type Model struct {
@@ -67,6 +69,7 @@ type Field struct {
 	Tag    reflect.StructTag
 	Fields []*Field
 	Parent *Field
+	isMap  bool
 }
 
 func NewField(n, t string, tag reflect.StructTag) *Field {
@@ -75,6 +78,7 @@ func NewField(n, t string, tag reflect.StructTag) *Field {
 		Type:   t,
 		Tag:    tag,
 		Fields: make([]*Field, 0),
+		isMap:  strings.HasPrefix(t, "map["),
 	}
 }
 
@@ -93,11 +97,23 @@ func (f *Field) GetPath() string {
 	recursive := f
 	path := make([]string, 0)
 	for recursive != nil {
+		if recursive.isMap {
+			path = append(path, "[map]")
+		}
+
 		path = append(path, recursive.DbName())
 		recursive = recursive.Parent
 	}
 
 	return strings.Join(reverseSliceStrings(path), ".")
+}
+
+func (f *Field) ContainsMap() bool {
+	if !f.isMap && f.Parent != nil {
+		return f.Parent.ContainsMap()
+	}
+
+	return f.isMap
 }
 
 func (f *Field) GetTagValue(key string) string {
@@ -134,7 +150,12 @@ func (f *Field) ValidFields() []*Field {
 }
 
 func (f *Field) FindableType() string {
-	return strings.Replace(f.Type, "[]", "", 1)
+	startType := strings.Index(f.Type, "]")
+	if startType != -1 {
+		return f.Type[startType+1:]
+	}
+
+	return f.Type
 }
 
 func (f *Field) Findable() bool {

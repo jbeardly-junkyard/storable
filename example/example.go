@@ -1,19 +1,31 @@
 package example
 
-import "github.com/tyba/storable"
+import (
+	"time"
+
+	"github.com/tyba/storable"
+)
 
 //go:generate storable gen
 
+type Alias string
 type MyModel struct {
 	storable.Document `bson:",inline" collection:"my_model"`
 
-	Foo         string
-	Bar         int `bson:"bla2"`
-	Bytes       []byte
-	Slice       []string
-	NestedRef   *SomeType
-	Nested      SomeType
-	NestedSlice []*SomeType
+	String        string
+	Int           int `bson:"bla2"`
+	Bytes         []byte
+	Slice         []string
+	NestedRef     *SomeType
+	Nested        SomeType
+	NestedSlice   []*SomeType
+	AliasOfString Alias
+	Time          time.Time
+	MapsOfString  map[string]string
+	InlineStruct  struct {
+		MapOfString   map[string]string
+		MapOfSomeType map[string]SomeType
+	}
 }
 
 type SomeType struct { // not generated

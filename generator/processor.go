@@ -37,7 +37,9 @@ func (p *Processor) Do() (string, []*Model, error) {
 
 	pkg, err := p.parseSourceFiles(files)
 	if err != nil {
-		return "", nil, err
+		fmt.Println(pkg)
+
+		//return "", nil, err
 	}
 
 	return pkg.Name(), p.processPackage(pkg), nil
@@ -107,6 +109,8 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 		return p.tryGetStruct(t.Elem())
 	case *types.Slice:
 		return p.tryGetStruct(t.Elem())
+	case *types.Map:
+		return p.tryGetStruct(t.Elem())
 	case *types.Struct:
 		return t
 	}
@@ -130,29 +134,40 @@ func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 	c := s.NumFields()
 
 	base = -1
-	fields = make([]*Field, c)
+	fields = make([]*Field, 0)
 
 	for i := 0; i < c; i++ {
 		f := s.Field(i)
-		t := reflect.StructTag(s.Tag(i))
+		if !f.Exported() {
+			continue
+		}
 
+		t := reflect.StructTag(s.Tag(i))
 		if f.Type().String() == BaseDocument {
 			base = i
 		}
 
 		field := NewField(f.Name(), f.Type().String(), t)
-
 		str := p.tryGetStruct(f.Type())
 		if f.Type().String() != BaseDocument && str != nil {
 			_, subfields := p.getFields(str)
 			field.SetFields(subfields)
-			field.Type = "struct"
+			field.Type = getStructType(f.Type())
 		}
 
-		fields[i] = field
+		fields = append(fields, field)
 	}
 
 	return
+}
+
+func getStructType(t types.Type) string {
+	ts := t.String()
+	if ts != "time.Time" && ts != "bson.ObjectId" {
+		return "struct"
+	}
+
+	return ts
 }
 
 func (p *Processor) procesBaseField(m *Model, f *Field) {

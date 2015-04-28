@@ -4,10 +4,13 @@ type schema struct {
 {{end}}
 }
 
-{{define "schemaDef"}}{{.Name}} {{if .ValidFields}}{{.Type}}{
-    {{range .ValidFields}}{{template "schemaDef" .}}
-    {{end}}
-}{{else}}storable.Field{{end}}{{end}}
+{{define "schemaDef"}}{{if eq .Type "struct"}}{{if .ValidFields}}\
+    {{.Name}} {{.Type}}{
+        {{range .ValidFields}}{{template "schemaDef" .}}
+        {{end}}\
+    }\
+    {{end}}\
+{{else}}{{.Name}} storable.{{if .ContainsMap}}Map{{else}}Field{{end}}{{end}}{{end}}
 
 var Schema = schema{
 {{range .Models}}{{template "schemaVar" .}}
@@ -15,11 +18,11 @@ var Schema = schema{
 }
 
 {{define "schemaVar"}}\
-    {{if eq .Type "struct"}}{{template "schemaVarDef" .}}{
+    {{if eq .Type "struct"}}{{if .ValidFields}}{{template "schemaVarDef" .}}{
         {{range .ValidFields}}{{template "schemaVar" .}}{{end}}
     },
-    {{else}}\
-    {{.Name}}: storable.NewField("{{.GetPath}}", "{{.FindableType}}"),
+    {{end}}{{else}}\
+    {{.Name}}: storable.{{if .ContainsMap}}NewMap{{else}}NewField{{end}}("{{.GetPath}}", "{{.FindableType}}"),
     {{end}}\
 {{end}}
 

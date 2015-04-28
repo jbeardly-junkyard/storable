@@ -6,11 +6,3 @@ type {{.Name}}Query struct {
 func (q *{{.Name}}Query) FindById(id bson.ObjectId) {
     q.AddCriteria(storable.IdField, id)
 }
-
-{{$modelName := .Name}}
-{{range .ValidFields}}{{if ne .FindableType "struct"}}
-func (q *{{ $modelName }}Query) FindBy{{.Name}}(value {{.FindableType}}) {
-	q.AddCriteria(Schema.{{$modelName}}.{{.Name}}, value)
-}
-{{end}}{{end}}
-

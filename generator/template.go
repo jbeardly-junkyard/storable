@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"go/build"
 	"go/format"
 	"io"
@@ -34,11 +35,18 @@ func (t *Template) Execute(wr io.Writer, data interface{}) error {
 func prettyfy(input []byte, wr io.Writer) error {
 	output, err := format.Source(input)
 	if err != nil {
+		printDocumentWithNumbers(string(input))
 		return err
 	}
 
 	_, err = wr.Write(output)
 	return err
+}
+
+func printDocumentWithNumbers(code string) {
+	for i, line := range strings.Split(code, "\n") {
+		fmt.Printf("%.3d %s\n", i+1, line)
+	}
 }
 
 func loadTemplateText(filename string) string {

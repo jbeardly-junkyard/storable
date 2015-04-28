@@ -28,12 +28,12 @@ func (s *MongoSuite) SetUpTest(c *C) {
 func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	store := NewMyModelStore(s.db)
 	m := store.New()
-	m.Foo = "foo"
+	m.String = "foo"
 
 	c.Assert(store.Insert(m), IsNil)
 
 	q := store.Query()
-	q.FindByFoo("foo")
+	q.AddCriteria(Schema.MyModel.String, "foo")
 
 	r, err := store.Find(q)
 	c.Assert(err, IsNil)
@@ -42,7 +42,7 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	c.Assert(res, HasLen, 1)
 	c.Assert(err, IsNil)
 
-	q.FindByFoo("bar")
+	q.AddCriteria(Schema.MyModel.String, "bar")
 	r, err = store.Find(q)
 	c.Assert(err, IsNil)
 
@@ -52,10 +52,21 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 }
 
 func (s *MongoSuite) TestSchema(c *C) {
-	c.Assert(Schema.MyModel.Foo.String(), Equals, "foo")
-	c.Assert(Schema.MyModel.Bar.String(), Equals, "bla2")
+	c.Assert(Schema.MyModel.String.String(), Equals, "string")
+	c.Assert(Schema.MyModel.Int.String(), Equals, "bla2")
 	c.Assert(Schema.MyModel.Nested.X.String(), Equals, "nested.x")
-	c.Assert(Schema.MyModel.Nested.Another.X.String(), Equals, "nested.another.x")
+
+	key := Schema.MyModel.Nested.Another.X.String()
+	c.Assert(key, Equals, "nested.another.x")
+
+	key = Schema.MyModel.MapsOfString.Key("foo").String()
+	c.Assert(key, Equals, "mapsofstring.foo")
+
+	key = Schema.MyModel.InlineStruct.MapOfString.Key("qux").String()
+	c.Assert(key, Equals, "inlinestruct.mapofstring.qux")
+
+	key = Schema.MyModel.InlineStruct.MapOfSomeType.X.Key("foo").String()
+	c.Assert(key, Equals, "inlinestruct.mapofsometype.foo.x")
 }
 
 func (s *MongoSuite) TearDownTest(c *C) {
