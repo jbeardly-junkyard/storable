@@ -16,6 +16,10 @@ type ResultSet struct {
 	mgoIter  *mgo.Iter
 }
 
+func (r *ResultSet) Count() (int, error) {
+	return r.mgoQuery.Count()
+}
+
 func (r *ResultSet) All(result interface{}) error {
 	defer r.Close()
 	return r.mgoQuery.All(result)

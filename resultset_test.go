@@ -4,6 +4,19 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+func (s *BaseSuite) TestResultSet_Count(c *C) {
+	st := NewStore(s.db, "test")
+	st.Insert(&Person{FirstName: "foo"})
+	st.Insert(&Person{FirstName: "bar"})
+
+	r, err := st.Find(NewBaseQuery())
+	c.Assert(err, IsNil)
+
+	count, err := r.Count()
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, 2)
+}
+
 func (s *BaseSuite) TestResultSet_All(c *C) {
 	st := NewStore(s.db, "test")
 	st.Insert(&Person{FirstName: "foo"})
