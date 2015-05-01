@@ -149,3 +149,10 @@ func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	c.Assert(result, HasLen, 1)
 	c.Assert(result[0].FirstName, Equals, "qux")
 }
+
+func (s *BaseSuite) TestStore_RawUpdateEmpty(c *C) {
+	st := NewStore(s.db, "test")
+	q := NewBaseQuery()
+	err := st.RawUpdate(q, bson.M{"firstname": "qux"})
+	c.Assert(err, Equals, EmptyQueryInRawErr)
+}

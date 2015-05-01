@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	NonNewDocumentErr = errors.New("Cannot insert a non new document.")
-	NewDocumentErr    = errors.New("Cannot updated a new document.")
+	NonNewDocumentErr  = errors.New("Cannot insert a non new document.")
+	NewDocumentErr     = errors.New("Cannot updated a new document.")
+	EmptyQueryInRawErr = errors.New("Empty queries are not allowed on raw ops.")
 )
 
 type Store struct {
@@ -70,5 +71,10 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 }
 
 func (s *Store) RawUpdate(query Query, update interface{}) error {
-	return s.collection.Update(query.GetCriteria(), update)
+	criteria := query.GetCriteria()
+	if len(criteria) == 0 {
+		return EmptyQueryInRawErr
+	}
+
+	return s.collection.Update(criteria, update)
 }
