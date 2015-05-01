@@ -35,11 +35,7 @@ func (p *Processor) Do() (*Package, error) {
 		return nil, err
 	}
 
-	pkg, err := p.parseSourceFiles(files)
-	if err != nil {
-		return nil, err
-	}
-
+	pkg, _ := p.parseSourceFiles(files)
 	models, otherStructs := p.processPackage(pkg)
 
 	return &Package{
@@ -82,7 +78,7 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 		files = append(files, file)
 	}
 
-	config := types.Config{FakeImportC: true}
+	config := types.Config{FakeImportC: true, Error: func(error) {}}
 	info := &types.Info{}
 
 	return config.Check(p.Path, fs, files, info)
