@@ -3,6 +3,8 @@ package example
 import (
 	"testing"
 
+	"github.com/tyba/storable/operators"
+
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
 )
@@ -33,7 +35,7 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	c.Assert(store.Insert(m), IsNil)
 
 	q := store.Query()
-	q.AddCriteria(Schema.MyModel.String, "foo")
+	q.AddCriteria(operators.Eq(Schema.MyModel.String, "foo"))
 
 	r, err := store.Find(q)
 	c.Assert(err, IsNil)
@@ -42,7 +44,7 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	c.Assert(res, HasLen, 1)
 	c.Assert(err, IsNil)
 
-	q.AddCriteria(Schema.MyModel.String, "bar")
+	q.AddCriteria(operators.Eq(Schema.MyModel.String, "bar"))
 	r, err = store.Find(q)
 	c.Assert(err, IsNil)
 

@@ -2,6 +2,7 @@ package {{.Name}}
 
 import (
     "github.com/tyba/storable"
+    "github.com/tyba/storable/operators"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
 )

@@ -12,21 +12,25 @@ type Query interface {
 }
 
 type BaseQuery struct {
-	criteria    bson.M
+	clauses     []bson.M
 	Limit, Skip int
 	Sort        Sort
 }
 
 func NewBaseQuery() *BaseQuery {
-	return &BaseQuery{criteria: make(bson.M, 0)}
+	return &BaseQuery{clauses: make([]bson.M, 0)}
 }
 
-func (q *BaseQuery) AddCriteria(key Field, val interface{}) {
-	q.criteria[key.String()] = val
+func (q *BaseQuery) AddCriteria(expr bson.M) {
+	q.clauses = append(q.clauses, expr)
 }
 
 func (q *BaseQuery) GetCriteria() bson.M {
-	return q.criteria
+	if len(q.clauses) == 0 {
+		return nil
+	}
+
+	return bson.M{"$and": q.clauses}
 }
 
 func (q *BaseQuery) GetSort() Sort {

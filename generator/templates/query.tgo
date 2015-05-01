@@ -4,5 +4,5 @@ type {{.QueryName}} struct {
 }
 
 func (q *{{.QueryName}}) FindById(id bson.ObjectId) {
-    q.AddCriteria(storable.IdField, id)
+    q.AddCriteria(operators.Eq(storable.IdField, id))
 }

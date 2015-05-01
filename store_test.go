@@ -43,7 +43,7 @@ func (s *BaseSuite) TestStore_Update(c *C) {
 	c.Assert(err, IsNil)
 
 	q := NewBaseQuery()
-	q.AddCriteria(NewField("firstname", ""), "qux")
+	q.AddCriteria(bson.M{"firstname": "qux"})
 
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
@@ -133,13 +133,13 @@ func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	st.Insert(&Person{FirstName: "bar"})
 
 	q := NewBaseQuery()
-	q.AddCriteria(NewField("firstname", ""), "foo")
+	q.AddCriteria(bson.M{"firstname": "foo"})
 
 	err := st.RawUpdate(q, bson.M{"firstname": "qux"})
 	c.Assert(err, IsNil)
 
 	q = NewBaseQuery()
-	q.AddCriteria(NewField("firstname", ""), "qux")
+	q.AddCriteria(bson.M{"firstname": "qux"})
 
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
