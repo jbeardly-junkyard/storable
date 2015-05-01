@@ -1,4 +1,4 @@
-package {{.Package}}
+package {{.Name}}
 
 import (
     "github.com/tyba/storable"
@@ -6,9 +6,5 @@ import (
     "gopkg.in/mgo.v2/bson"
 )
 
-{{range .Models}}
-  {{template "model" .}}
-{{end}}
-
-
+{{template "model" .}}
 {{template "schema" .}}

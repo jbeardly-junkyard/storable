@@ -20,13 +20,13 @@ func (c *CmdGenerate) Execute(args []string) error {
 	}
 
 	p := generator.NewProcessor(c.Input, []string{c.Output})
-	name, models, err := p.Do()
+	pkg, err := p.Do()
 	if err != nil {
 		return err
 	}
 
 	gen := generator.NewGenerator(filepath.Join(c.Input, c.Output))
-	err = gen.Generate(name, models)
+	err = gen.Generate(pkg)
 	if err != nil {
 		return err
 	}

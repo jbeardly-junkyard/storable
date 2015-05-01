@@ -25,8 +25,34 @@ var findableTypes = map[string]bool{
 	"map":     true,
 }
 
+type Package struct {
+	Name    string
+	Models  []*Model
+	Structs []string
+}
+
+func (p *Package) StructIsDefined(name string) bool {
+	for _, n := range p.Structs {
+		if name == n {
+			return true
+		}
+	}
+
+	return false
+}
+
+const (
+	StoreNamePattern     = "%sStore"
+	QueryNamePattern     = "%sQuery"
+	ResultSetNamePattern = "%sResultSet"
+)
+
 type Model struct {
-	Name       string
+	Name          string
+	StoreName     string
+	QueryName     string
+	ResultSetName string
+
 	Collection string
 	Type       string
 	Fields     []*Field
@@ -34,9 +60,12 @@ type Model struct {
 
 func NewModel(n string) *Model {
 	return &Model{
-		Name:   n,
-		Type:   "struct",
-		Fields: make([]*Field, 0),
+		Name:          n,
+		StoreName:     fmt.Sprintf(StoreNamePattern, n),
+		QueryName:     fmt.Sprintf(QueryNamePattern, n),
+		ResultSetName: fmt.Sprintf(ResultSetNamePattern, n),
+		Type:          "struct",
+		Fields:        make([]*Field, 0),
 	}
 }
 

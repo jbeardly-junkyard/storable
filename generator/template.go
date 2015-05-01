@@ -12,11 +12,6 @@ import (
 	"text/template"
 )
 
-type TemplateData struct {
-	Package string
-	Models  []*Model
-}
-
 type Template struct {
 	template *template.Template
 }

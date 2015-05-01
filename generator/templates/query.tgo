@@ -1,8 +1,8 @@
 
-type {{.Name}}Query struct {
+type {{.QueryName}} struct {
 	storable.BaseQuery
 }
 
-func (q *{{.Name}}Query) FindById(id bson.ObjectId) {
+func (q *{{.QueryName}}) FindById(id bson.ObjectId) {
     q.AddCriteria(storable.IdField, id)
 }

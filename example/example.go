@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/tyba/storable"
+
+	"gopkg.in/mgo.v2"
 )
 
 //go:generate storable gen
@@ -28,6 +30,9 @@ type MyModel struct {
 	}
 }
 
+func (m *MyModel) IrrelevantFunction() {
+}
+
 type SomeType struct { // not generated
 	X       int
 	Y       int
@@ -45,5 +50,13 @@ type AnotherModel struct {
 	Bar               string
 }
 
-func (m *MyModel) IrrelevantFunction() {
+type AnotherModelStore struct {
+	storable.Store
+	Foo bool
+}
+
+func NewAnotherModelStore(db *mgo.Database, foo bool) *AnotherModelStore {
+	return &AnotherModelStore{
+		*storable.NewStore(db, "another_model"), foo,
+	}
 }

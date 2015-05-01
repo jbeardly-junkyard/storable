@@ -1,23 +1,23 @@
 
-type {{.Name}}ResultSet struct {
+type {{.ResultSetName}} struct {
     storable.ResultSet
 }
 
-func (r *{{.Name}}ResultSet) All() ([]*{{.Name}}, error) {
+func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     var result []*{{.Name}}
     err := r.ResultSet.All(&result)
 
     return result, err
 }
 
-func (r *{{.Name}}ResultSet) One() (*{{.Name}}, error) {
+func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
     var result *{{.Name}}
     _, err := r.ResultSet.One(&result)
 
     return result, err
 }
 
-func (r *{{.Name}}ResultSet) Next() (*{{.Name}}, error) {
+func (r *{{.ResultSetName}}) Next() (*{{.Name}}, error) {
     var result *{{.Name}}
     _, err := r.ResultSet.Next(&result)
 
