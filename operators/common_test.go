@@ -37,9 +37,7 @@ func (s *OperatorsSuite) TestLogical(c *check.C) {
 	})
 
 	not := Not(bson.M{"foo": "qux"})
-	c.Assert(not, check.DeepEquals, bson.M{
-		"$not": bson.M{"foo": "qux"},
-	})
+	c.Assert(not, check.DeepEquals, bson.M{"foo": bson.M{"$not": "qux"}})
 
 	nor := Nor(bson.M{"foo": "qux"}, bson.M{"qux": "qux"})
 	c.Assert(nor, check.DeepEquals, bson.M{

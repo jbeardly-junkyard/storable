@@ -19,7 +19,12 @@ func And(clauses ...bson.M) bson.M {
 // Not Inverts the effect of a query expression and returns documents that do
 // not match the query expression.
 func Not(expr bson.M) bson.M {
-	return bson.M{"$not": expr}
+	result := make(bson.M, 0)
+	for key, e := range expr {
+		result[key] = bson.M{"$not": e}
+	}
+
+	return result
 }
 
 // Nor Joins query clauses with a logical NOR returns all documents that fail
