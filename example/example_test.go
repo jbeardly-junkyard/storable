@@ -27,6 +27,13 @@ func (s *MongoSuite) SetUpTest(c *C) {
 	s.db = conn.DB(testDatabase)
 }
 
+func (s *MongoSuite) TestStore_New(c *C) {
+	store := NewMyModelStore(s.db)
+	m := store.New()
+
+	c.Assert(m.IsNew(), Equals, true)
+}
+
 func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	store := NewMyModelStore(s.db)
 	m := store.New()

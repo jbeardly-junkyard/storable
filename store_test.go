@@ -6,7 +6,7 @@ import (
 )
 
 func (s *BaseSuite) TestStore_Insert(c *C) {
-	p := &Person{FirstName: "foo"}
+	p := NewPerson("foo")
 	st := NewStore(s.db, "test")
 	err := st.Insert(p)
 	c.Assert(err, IsNil)
@@ -22,7 +22,7 @@ func (s *BaseSuite) TestStore_Insert(c *C) {
 }
 
 func (s *BaseSuite) TestStore_InsertOld(c *C) {
-	p := &Person{FirstName: "foo"}
+	p := NewPerson("foo")
 	st := NewStore(s.db, "test")
 	err := st.Insert(p)
 	c.Assert(err, IsNil)
@@ -32,7 +32,7 @@ func (s *BaseSuite) TestStore_InsertOld(c *C) {
 }
 
 func (s *BaseSuite) TestStore_Update(c *C) {
-	p := &Person{FirstName: "foo"}
+	p := NewPerson("foo")
 
 	st := NewStore(s.db, "test")
 	st.Insert(p)
@@ -54,8 +54,30 @@ func (s *BaseSuite) TestStore_Update(c *C) {
 	c.Assert(result[0].FirstName, Equals, "qux")
 }
 
+func (s *BaseSuite) TestStore_Save(c *C) {
+	p := NewPerson("foo")
+
+	st := NewStore(s.db, "test")
+	err := st.Save(p)
+	c.Assert(err, IsNil)
+	c.Assert(p.IsNew(), Equals, false)
+
+	p.FirstName = "qux"
+	err = st.Save(p)
+	c.Assert(err, IsNil)
+	c.Assert(p.IsNew(), Equals, false)
+
+	r, err := st.Find(NewBaseQuery())
+	c.Assert(err, IsNil)
+
+	var result []*Person
+	c.Assert(r.All(&result), IsNil)
+	c.Assert(result, HasLen, 1)
+	c.Assert(result[0].FirstName, Equals, "qux")
+}
+
 func (s *BaseSuite) TestStore_UpdateNew(c *C) {
-	p := &Person{FirstName: "foo"}
+	p := NewPerson("foo")
 	st := NewStore(s.db, "test")
 
 	err := st.Update(p)
@@ -63,7 +85,7 @@ func (s *BaseSuite) TestStore_UpdateNew(c *C) {
 }
 
 func (s *BaseSuite) TestStore_Delete(c *C) {
-	p := &Person{FirstName: "foo"}
+	p := NewPerson("foo")
 	st := NewStore(s.db, "test")
 	st.Insert(p)
 
@@ -80,8 +102,8 @@ func (s *BaseSuite) TestStore_Delete(c *C) {
 
 func (s *BaseSuite) TestStore_FindLimit(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	q := NewBaseQuery()
 	q.Limit = 1
@@ -96,8 +118,8 @@ func (s *BaseSuite) TestStore_FindLimit(c *C) {
 
 func (s *BaseSuite) TestStore_FindSkip(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	q := NewBaseQuery()
 	q.Skip = 1
@@ -112,8 +134,8 @@ func (s *BaseSuite) TestStore_FindSkip(c *C) {
 
 func (s *BaseSuite) TestStore_FindSort(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	q := NewBaseQuery()
 	q.Sort = Sort{{IdField, Desc}}
@@ -129,8 +151,8 @@ func (s *BaseSuite) TestStore_FindSort(c *C) {
 
 func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	q := NewBaseQuery()
 	q.AddCriteria(bson.M{"firstname": "foo"})

@@ -3,6 +3,8 @@ package storable
 import (
 	"errors"
 
+	"github.com/tyba/storable/operators"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -45,11 +47,25 @@ func (s *Store) Update(doc DocumentBase) error {
 		return NewDocumentErr
 	}
 
-	return s.collection.Update(bson.M{"_id": doc.GetId()}, doc)
+	q := NewBaseQuery()
+	q.AddCriteria(operators.Eq(IdField, doc.GetId()))
+
+	return s.collection.Update(q.GetCriteria(), doc)
+}
+
+func (s *Store) Save(doc DocumentBase) error {
+	if doc.IsNew() {
+		return s.Insert(doc)
+	}
+
+	return s.Update(doc)
 }
 
 func (s *Store) Delete(doc DocumentBase) error {
-	return s.collection.Remove(bson.M{"_id": doc.GetId()})
+	q := NewBaseQuery()
+	q.AddCriteria(operators.Eq(IdField, doc.GetId()))
+
+	return s.collection.Remove(q.GetCriteria())
 }
 
 func (s *Store) Find(q Query) (*ResultSet, error) {

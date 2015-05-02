@@ -54,3 +54,10 @@ type Person struct {
 	LastName  string
 	Gender    string
 }
+
+func NewPerson(name string) *Person {
+	doc := &Person{FirstName: name}
+	doc.SetIsNew(true)
+
+	return doc
+}

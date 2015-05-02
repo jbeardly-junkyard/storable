@@ -11,7 +11,10 @@ func New{{.StoreName}}(db *mgo.Database) *{{.StoreName}} {
 {{end}}
 
 func (s *{{.StoreName}}) New() *{{.Name}} {
-	return &{{.Name}}{}
+	doc := &{{.Name}}{}
+    doc.SetIsNew(true)
+
+    return doc
 }
 
 func (s *{{.StoreName}}) Query() *{{.QueryName}} {

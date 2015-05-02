@@ -6,8 +6,8 @@ import (
 
 func (s *BaseSuite) TestResultSet_Count(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)
@@ -19,8 +19,8 @@ func (s *BaseSuite) TestResultSet_Count(c *C) {
 
 func (s *BaseSuite) TestResultSet_All(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)
@@ -34,8 +34,8 @@ func (s *BaseSuite) TestResultSet_All(c *C) {
 
 func (s *BaseSuite) TestResultSet_One(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)
@@ -50,8 +50,8 @@ func (s *BaseSuite) TestResultSet_One(c *C) {
 
 func (s *BaseSuite) TestResultSet_Next(c *C) {
 	st := NewStore(s.db, "test")
-	st.Insert(&Person{FirstName: "foo"})
-	st.Insert(&Person{FirstName: "bar"})
+	st.Insert(NewPerson("foo"))
+	st.Insert(NewPerson("bar"))
 
 	r, err := st.Find(NewBaseQuery())
 	c.Assert(err, IsNil)

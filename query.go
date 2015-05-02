@@ -3,6 +3,8 @@ package storable
 import (
 	"encoding/json"
 
+	"github.com/tyba/storable/operators"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -32,7 +34,7 @@ func (q *BaseQuery) GetCriteria() bson.M {
 		return nil
 	}
 
-	return bson.M{"$and": q.clauses}
+	return operators.And(q.clauses...)
 }
 
 func (q *BaseQuery) GetSort() Sort {
