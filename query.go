@@ -1,6 +1,8 @@
 package storable
 
 import (
+	"encoding/json"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -43,4 +45,10 @@ func (q *BaseQuery) GetLimit() int {
 
 func (q *BaseQuery) GetSkip() int {
 	return q.Skip
+}
+
+func (q *BaseQuery) String() string {
+	j, _ := json.Marshal(q.GetCriteria())
+
+	return string(j)
 }
