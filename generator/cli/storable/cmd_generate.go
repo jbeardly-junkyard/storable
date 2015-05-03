@@ -11,7 +11,7 @@ import (
 
 type CmdGenerate struct {
 	Input  string `short:"" long:"input" description:"input package directory" default:"."`
-	Output string `short:"" long:"output" description:"output file name" default:"base.go"`
+	Output string `short:"" long:"output" description:"output file name" default:"storable.go"`
 }
 
 func (c *CmdGenerate) Execute(args []string) error {
