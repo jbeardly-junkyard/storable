@@ -3,13 +3,13 @@ package storable
 import (
 	"testing"
 
+	"code.google.com/p/go-uuid/uuid"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
 )
 
 const (
 	testMongoHost = "localhost"
-	testDatabase  = "storable-test"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -22,7 +22,7 @@ var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpTest(c *C) {
 	conn, _ := mgo.Dial(testMongoHost)
-	s.db = conn.DB(testDatabase)
+	s.db = conn.DB(uuid.New())
 }
 
 func (s *BaseSuite) TestSort_String(c *C) {

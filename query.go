@@ -10,6 +10,9 @@ import (
 
 type Query interface {
 	GetCriteria() bson.M
+	Sort(s Sort)
+	Limit(l int)
+	Skip(s int)
 	GetSort() Sort
 	GetLimit() int
 	GetSkip() int
@@ -17,8 +20,8 @@ type Query interface {
 
 type BaseQuery struct {
 	clauses     []bson.M
-	Limit, Skip int
-	Sort        Sort
+	limit, skip int
+	sort        Sort
 }
 
 func NewBaseQuery() *BaseQuery {
@@ -37,16 +40,28 @@ func (q *BaseQuery) GetCriteria() bson.M {
 	return operators.And(q.clauses...)
 }
 
+func (q *BaseQuery) Sort(s Sort) {
+	q.sort = s
+}
+
+func (q *BaseQuery) Limit(l int) {
+	q.limit = l
+}
+
+func (q *BaseQuery) Skip(s int) {
+	q.skip = s
+}
+
 func (q *BaseQuery) GetSort() Sort {
-	return q.Sort
+	return q.sort
 }
 
 func (q *BaseQuery) GetLimit() int {
-	return q.Limit
+	return q.limit
 }
 
 func (q *BaseQuery) GetSkip() int {
-	return q.Skip
+	return q.skip
 }
 
 func (q *BaseQuery) String() string {
