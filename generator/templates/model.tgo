@@ -11,7 +11,11 @@ func New{{.StoreName}}(db *mgo.Database) *{{.StoreName}} {
 {{end}}
 
 func (s *{{.StoreName}}) New() *{{.Name}} {
+    {{if not ($.FunctionIsDefined (print "New" .Name))}} \
 	doc := &{{.Name}}{}
+    {{else}} \
+    doc := New{{.Name}}()
+    {{end}} \
     doc.SetIsNew(true)
 
     return doc

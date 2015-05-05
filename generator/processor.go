@@ -35,14 +35,12 @@ func (p *Processor) Do() (*Package, error) {
 		return nil, err
 	}
 
-	pkg, _ := p.parseSourceFiles(files)
-	models, otherStructs := p.processPackage(pkg)
+	typesPkg, _ := p.parseSourceFiles(files)
 
-	return &Package{
-		Name:    pkg.Name(),
-		Models:  models,
-		Structs: otherStructs,
-	}, nil
+	pkg := &Package{Name: typesPkg.Name()}
+	p.processPackage(pkg, typesPkg)
+
+	return pkg, nil
 }
 
 func (p *Processor) getSourceFiles() ([]string, error) {
@@ -84,25 +82,38 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 	return config.Check(p.Path, fs, files, info)
 }
 
-func (p *Processor) processPackage(pkg *types.Package) ([]*Model, []string) {
-	s := pkg.Scope()
-	r := make([]*Model, 0)
+func (p *Processor) processPackage(pkg *Package, typesPkg *types.Package) {
+	pkg.Models = make([]*Model, 0)
+	pkg.Structs = make([]string, 0)
+	pkg.Functions = make([]string, 0)
 
-	other := make([]string, 0)
+	s := typesPkg.Scope()
 	for _, name := range s.Names() {
+		fun := p.tryGetFunction(s.Lookup(name))
+		if fun != nil {
+			pkg.Functions = append(pkg.Functions, name)
+		}
+
 		str := p.tryGetStruct(s.Lookup(name).Type())
 		if str == nil {
 			continue
 		}
 
 		if m := p.processStruct(name, str); m != nil {
-			r = append(r, m)
+			pkg.Models = append(pkg.Models, m)
 		} else {
-			other = append(other, name)
+			pkg.Structs = append(pkg.Structs, name)
 		}
 	}
+}
 
-	return r, other
+func (p *Processor) tryGetFunction(typ types.Object) *types.Func {
+	switch t := typ.(type) {
+	case *types.Func:
+		return t
+	}
+
+	return nil
 }
 
 func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {

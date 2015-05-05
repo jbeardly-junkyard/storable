@@ -27,13 +27,24 @@ var findableTypes = map[string]bool{
 }
 
 type Package struct {
-	Name    string
-	Models  []*Model
-	Structs []string
+	Name      string
+	Models    []*Model
+	Structs   []string
+	Functions []string
 }
 
 func (p *Package) StructIsDefined(name string) bool {
 	for _, n := range p.Structs {
+		if name == n {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *Package) FunctionIsDefined(name string) bool {
+	for _, n := range p.Functions {
 		if name == n {
 			return true
 		}
@@ -91,6 +102,14 @@ func (m *Model) ValidFields() []*Field {
 	}
 
 	return fields
+}
+
+type Function struct {
+	Name string
+	Args string
+}
+
+func NewFunction() {
 }
 
 type Field struct {

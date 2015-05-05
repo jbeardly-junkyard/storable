@@ -60,3 +60,7 @@ func NewAnotherModelStore(db *mgo.Database, foo bool) *AnotherModelStore {
 		*storable.NewStore(db, "another_model"), foo,
 	}
 }
+
+func NewAnotherModel() *AnotherModel {
+	return &AnotherModel{}
+}
