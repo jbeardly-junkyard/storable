@@ -79,6 +79,7 @@ func (r *ProductResultSet) Next() (*Product, error) {
 
 type schema struct {
 	Product struct {
+		Status    storable.Field
 		CreatedAt storable.Field
 		UpdatedAt storable.Field
 		Name      storable.Field
@@ -94,6 +95,7 @@ type schema struct {
 
 var Schema = schema{
 	Product: struct {
+		Status    storable.Field
 		CreatedAt storable.Field
 		UpdatedAt storable.Field
 		Name      storable.Field
@@ -105,6 +107,7 @@ var Schema = schema{
 		Url      storable.Field
 		Tags     storable.Field
 	}{
+		Status:    storable.NewField("status", "int"),
 		CreatedAt: storable.NewField("createdat", "time.Time"),
 		UpdatedAt: storable.NewField("updatedat", "time.Time"),
 		Name:      storable.NewField("name", "string"),

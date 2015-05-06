@@ -11,6 +11,7 @@ import (
 //go:generate storable gen
 
 type Alias string
+type SliceAlias []string
 type MyModel struct {
 	storable.Document `bson:",inline" collection:"my_model"`
 
@@ -18,6 +19,7 @@ type MyModel struct {
 	Int           int `bson:"bla2"`
 	Bytes         []byte
 	Slice         []string
+	SliceAlias    SliceAlias
 	NestedRef     *SomeType
 	Nested        SomeType
 	NestedSlice   []*SomeType
