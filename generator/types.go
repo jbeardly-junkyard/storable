@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"golang.org/x/tools/go/types"
 )
 
 var findableTypes = map[string]bool{
@@ -113,12 +115,13 @@ func NewFunction() {
 }
 
 type Field struct {
-	Name   string
-	Type   string
-	Tag    reflect.StructTag
-	Fields []*Field
-	Parent *Field
-	isMap  bool
+	Name        string
+	Type        string
+	CheckedNode *types.Var
+	Tag         reflect.StructTag
+	Fields      []*Field
+	Parent      *Field
+	isMap       bool
 }
 
 func NewField(n, t string, tag reflect.StructTag) *Field {
@@ -212,9 +215,16 @@ func (f *Field) Findable() bool {
 }
 
 func (f *Field) String() string {
+	return f.toString(0)
+}
+
+func (f *Field) toString(l int) string {
+	if l > 3 {
+		return "... more depth ..."
+	}
 	fields := make([]string, 0)
 	for _, f := range f.Fields {
-		fields = append(fields, f.String())
+		fields = append(fields, f.toString(l+1))
 	}
 
 	fieldsStr := strings.Join(fields, ", ")

@@ -18,6 +18,8 @@ const BaseDocument = "github.com/tyba/storable.Document"
 type Processor struct {
 	Path   string
 	Ignore map[string]bool
+
+	fieldsForStr map[*types.Struct]*[]*Field
 }
 
 func NewProcessor(path string, ignore []string) *Processor {
@@ -26,7 +28,11 @@ func NewProcessor(path string, ignore []string) *Processor {
 		i[file] = true
 	}
 
-	return &Processor{Path: path, Ignore: i}
+	return &Processor{
+		Path:         path,
+		Ignore:       i,
+		fieldsForStr: map[*types.Struct]*[]*Field{},
+	}
 }
 
 func (p *Processor) Do() (*Package, error) {
@@ -36,7 +42,10 @@ func (p *Processor) Do() (*Package, error) {
 	}
 
 	typesPkg, _ := p.parseSourceFiles(files)
+	return p.ProcessTypesPkg(typesPkg)
+}
 
+func (p *Processor) ProcessTypesPkg(typesPkg *types.Package) (*Package, error) {
 	pkg := &Package{Name: typesPkg.Name()}
 	p.processPackage(pkg, typesPkg)
 
@@ -146,10 +155,32 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 }
 
 func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
+	base = p.processFields(s)
+
+	for _, fields := range p.fieldsForStr {
+		for _, f := range *fields {
+			if f.CheckedNode == nil {
+				continue
+			}
+			if len(f.Fields) == 0 {
+				f.SetFields(*p.fieldsForStr[p.tryGetStruct(f.CheckedNode.Type())])
+			}
+		}
+	}
+
+	fields = *p.fieldsForStr[s]
+
+	return
+}
+
+func (p *Processor) processFields(s *types.Struct) int {
 	c := s.NumFields()
 
-	base = -1
-	fields = make([]*Field, 0)
+	base := -1
+	fields := make([]*Field, 0)
+	if _, ok := p.fieldsForStr[s]; !ok {
+		p.fieldsForStr[s] = &fields
+	}
 
 	for i := 0; i < c; i++ {
 		f := s.Field(i)
@@ -165,15 +196,18 @@ func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 		field := NewField(f.Name(), f.Type().Underlying().String(), t)
 		str := p.tryGetStruct(f.Type())
 		if f.Type().String() != BaseDocument && str != nil {
-			_, subfields := p.getFields(str)
-			field.SetFields(subfields)
 			field.Type = getStructType(f.Type())
+			field.CheckedNode = f
+			_, ok := p.fieldsForStr[str]
+			if !ok {
+				p.processFields(str)
+			}
 		}
 
 		fields = append(fields, field)
 	}
 
-	return
+	return base
 }
 
 func getStructType(t types.Type) string {
