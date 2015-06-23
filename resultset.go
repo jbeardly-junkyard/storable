@@ -12,6 +12,7 @@ var (
 
 type ResultSet struct {
 	IsClosed bool
+	session  *mgo.Session
 	mgoQuery *mgo.Query
 	mgoIter  *mgo.Iter
 }
@@ -60,5 +61,6 @@ func (r *ResultSet) Close() error {
 		return nil
 	}
 
+	defer r.session.Close()
 	return r.mgoIter.Close()
 }

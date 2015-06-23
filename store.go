@@ -15,13 +15,15 @@ var (
 )
 
 type Store struct {
-	Collection *mgo.Collection
+	db         *mgo.Database
+	collection string
 }
 
 // NewStore returns a new Store instance
 func NewStore(db *mgo.Database, collection string) *Store {
 	return &Store{
-		Collection: db.C(collection),
+		db:         db,
+		collection: collection,
 	}
 }
 
@@ -36,7 +38,10 @@ func (s *Store) Insert(doc DocumentBase) error {
 		doc.SetId(bson.NewObjectId())
 	}
 
-	err := s.Collection.Insert(doc)
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
+	err := c.Insert(doc)
 	if err == nil {
 		doc.SetIsNew(false)
 	}
@@ -51,7 +56,10 @@ func (s *Store) Update(doc DocumentBase) error {
 		return NewDocumentErr
 	}
 
-	return s.Collection.UpdateId(doc.GetId(), doc)
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
+	return c.UpdateId(doc.GetId(), doc)
 }
 
 // Save insert or update the given document in the collection, a document with
@@ -62,7 +70,10 @@ func (s *Store) Save(doc DocumentBase) error {
 		return EmptyIdErr
 	}
 
-	_, err := s.Collection.UpsertId(id, doc)
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
+	_, err := c.UpsertId(id, doc)
 	if err == nil {
 		doc.SetIsNew(false)
 	}
@@ -72,12 +83,16 @@ func (s *Store) Save(doc DocumentBase) error {
 
 // Delete remove the document from the collection
 func (s *Store) Delete(doc DocumentBase) error {
-	return s.Collection.RemoveId(doc.GetId())
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
+	return c.RemoveId(doc.GetId())
 }
 
 // Find executes the given query in the collection
 func (s *Store) Find(q Query) (*ResultSet, error) {
-	mq := s.Collection.Find(q.GetCriteria())
+	sess, c := s.getSessionAndCollection()
+	mq := c.Find(q.GetCriteria())
 
 	if !q.GetSort().IsEmpty() {
 		mq.Sort(q.GetSort().String())
@@ -91,7 +106,7 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 		mq.Limit(q.GetLimit())
 	}
 
-	return &ResultSet{mgoQuery: mq}, nil
+	return &ResultSet{session: sess, mgoQuery: mq}, nil
 }
 
 // RawUpdate performes a direct update in the collection, update is wrapped on
@@ -103,11 +118,14 @@ func (s *Store) RawUpdate(query Query, update interface{}, multi bool) error {
 		return EmptyQueryInRawErr
 	}
 
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
 	var err error
 	if multi {
-		_, err = s.Collection.UpdateAll(criteria, bson.M{"$set": update})
+		_, err = c.UpdateAll(criteria, bson.M{"$set": update})
 	} else {
-		err = s.Collection.Update(criteria, bson.M{"$set": update})
+		err = c.Update(criteria, bson.M{"$set": update})
 	}
 
 	return err
@@ -121,12 +139,21 @@ func (s *Store) RawDelete(query Query, multi bool) error {
 		return EmptyQueryInRawErr
 	}
 
+	sess, c := s.getSessionAndCollection()
+	defer sess.Close()
+
 	var err error
 	if multi {
-		_, err = s.Collection.RemoveAll(criteria)
+		_, err = c.RemoveAll(criteria)
 	} else {
-		err = s.Collection.Remove(criteria)
+		err = c.Remove(criteria)
 	}
 
 	return err
+}
+
+func (s *Store) getSessionAndCollection() (*mgo.Session, *mgo.Collection) {
+	sess := s.db.Session.Clone()
+
+	return sess, sess.DB(s.db.Name).C(s.collection)
 }
