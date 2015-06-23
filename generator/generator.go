@@ -1,8 +1,6 @@
 package generator
 
-import (
-	"os"
-)
+import "os"
 
 type Generator struct {
 	filename string

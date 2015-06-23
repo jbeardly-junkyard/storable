@@ -144,6 +144,7 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 
 func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	m := NewModel(name)
+	m.CheckedNode = s
 
 	var base int
 	if base, m.Fields = p.getFields(s); base == -1 {
