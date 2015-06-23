@@ -12,7 +12,14 @@ go:
 before_install:
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
-
+  
+install:
+  - go get -t -v .
+  
 script:
-  - $HOME/gopath/bin/goveralls -service=travis-ci -repotoken ttHfPtGawLnRyuGi8dxsddBDs1COrrI2o
+  - go test -v -covermode=count -coverprofile=coverage.out
+
+after_success:
+  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ttHfPtGawLnRyuGi8dxsddBDs1COrrI2o
+
+
