@@ -1,32 +1,17 @@
 
 type schema struct {
-{{range .Models}}{{template "schemaDef" .}}
+{{range .Models}}{{$.GenType . ""}}
 {{end}}
 }
 
-{{define "schemaDef"}}{{if eq .Type "struct"}}{{if .ValidFields}}\
-    {{.Name}} {{.Type}}{
-        {{range .ValidFields}}{{template "schemaDef" .}}
-        {{end}}\
-    }\
-    {{end}}\
-{{else}}{{.Name}} storable.{{if .ContainsMap}}Map{{else}}Field{{end}}{{end}}{{end}}
+{{range $f := .Fields}}
+type {{.Name}} struct {
+{{range .Fields}}{{$.GenType . $f.Path}}
+{{end}}
+}
+{{end}}
 
 var Schema = schema{
-{{range .Models}}{{template "schemaVar" .}}
+{{range .Models}}{{$.GenVar . nil}}
 {{end}}
 }
-
-{{define "schemaVar"}}\
-    {{if eq .Type "struct"}}{{if .ValidFields}}{{template "schemaVarDef" .}}{
-        {{range .ValidFields}}{{template "schemaVar" .}}{{end}}
-    },
-    {{end}}{{else}}\
-    {{.Name}}: storable.{{if .ContainsMap}}NewMap{{else}}NewField{{end}}("{{.GetPath}}", "{{.FindableType}}"),
-    {{end}}\
-{{end}}
-
-{{define "schemaVarDef"}}{{.Name}}: struct{{if .ValidFields}}{
-    {{range .ValidFields}}{{template "schemaDef" .}}
-    {{end}}
-}{{end}}{{end}}

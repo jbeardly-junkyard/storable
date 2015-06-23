@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 )
@@ -16,15 +17,127 @@ type Template struct {
 	template *template.Template
 }
 
-func (t *Template) Execute(wr io.Writer, data interface{}) error {
+type TemplateData struct {
+	*Package
+	Fields    []*TemplateField
+	processed map[interface{}]string
+}
+
+type TemplateField struct {
+	Name   string
+	Path   string
+	Fields interface{}
+}
+
+func (tf *TemplateField) ValidFields() []*Field {
+	return tf.Fields.([]*Field)
+}
+
+func (t *Template) Execute(wr io.Writer, data *Package) error {
 	var buf bytes.Buffer
 
-	err := t.template.Execute(&buf, data)
+	td := &TemplateData{data, []*TemplateField{}, map[interface{}]string{}}
+	err := t.template.Execute(&buf, td)
 	if err != nil {
 		return err
 	}
 
 	return prettyfy(buf.Bytes(), wr)
+}
+
+func (td *TemplateData) GenType(vi interface{}, path string) string {
+	v := reflect.ValueOf(vi)
+	sv := v
+	if v.Kind() == reflect.Ptr {
+		sv = v.Elem()
+	}
+	if sv.FieldByName("Type").Interface().(string) == "struct" {
+		if v.MethodByName("ValidFields").IsValid() {
+			return td.LinkStruct(path, vi)
+		}
+		return ""
+	} else {
+		k := "Field"
+		if v.MethodByName("ContainsMap").Call(nil)[0].Interface().(bool) {
+			k = "Map"
+		}
+		return fmt.Sprintf("%v storable.%v", sv.FieldByName("Name"), k)
+	}
+}
+
+func (td *TemplateData) LinkStruct(path string, vi interface{}) string {
+	v := reflect.ValueOf(vi)
+	name := v.Elem().FieldByName("Name").Interface().(string)
+	schemaName := "schema" + path + name
+
+	if proc, ok := td.processed[vi]; ok {
+		schemaName = proc
+		return name + " *" + schemaName
+	}
+	td.processed[vi] = schemaName
+
+	td.Fields = append(td.Fields, &TemplateField{
+		Name:   schemaName,
+		Path:   path + name,
+		Fields: v.MethodByName("ValidFields").Call(nil)[0].Interface(),
+	})
+
+	return name + " *" + schemaName
+}
+
+func (td *TemplateData) GenVar(vi interface{}, done map[interface{}]bool) string {
+	if done == nil {
+		done = map[interface{}]bool{}
+	}
+
+	v := reflect.ValueOf(vi)
+	sv := v
+	if v.Kind() == reflect.Ptr {
+		sv = v.Elem()
+	}
+
+	if done[vi] {
+		return sv.FieldByName("Name").Interface().(string) + ": nil,"
+	}
+
+	if sv.FieldByName("Type").Interface().(string) == "struct" {
+		if v.MethodByName("ValidFields").IsValid() {
+			return td.StructValue(vi, done)
+		}
+		return ""
+	} else {
+		k := "NewField"
+		if v.MethodByName("ContainsMap").Call(nil)[0].Interface().(bool) {
+			k = "NewMap"
+		}
+
+		return fmt.Sprintf(
+			`%v: storable.%v("%v", "%v"),`,
+			sv.FieldByName("Name"),
+			k,
+			v.MethodByName("GetPath").Call(nil)[0],
+			v.MethodByName("FindableType").Call(nil)[0],
+		)
+	}
+}
+
+func (td *TemplateData) StructValue(vi interface{}, done map[interface{}]bool) string {
+	v := reflect.ValueOf(vi)
+	name := v.Elem().FieldByName("Name").Interface().(string)
+
+	ifc := v.Interface()
+	if done[ifc] {
+		return name + ": nil,"
+	}
+	done[ifc] = true
+
+	ret := name + ": &" + td.processed[vi] + "{"
+	for _, v := range v.MethodByName("ValidFields").Call(nil)[0].Interface().([]*Field) {
+		ret += "\n" + td.GenVar(v, done)
+	}
+	ret += "\n},"
+
+	return ret
 }
 
 func prettyfy(input []byte, wr io.Writer) error {

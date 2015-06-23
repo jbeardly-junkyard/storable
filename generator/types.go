@@ -67,9 +67,10 @@ type Model struct {
 	QueryName     string
 	ResultSetName string
 
-	Collection string
-	Type       string
-	Fields     []*Field
+	Collection  string
+	Type        string
+	Fields      []*Field
+	CheckedNode *types.Struct
 }
 
 func NewModel(n string) *Model {
@@ -148,6 +149,7 @@ func (f *Field) AddField(field *Field) {
 func (f *Field) GetPath() string {
 	recursive := f
 	path := make([]string, 0)
+	done := map[*Field]bool{}
 	for recursive != nil {
 		if recursive.isMap {
 			path = append(path, "[map]")
@@ -155,14 +157,27 @@ func (f *Field) GetPath() string {
 
 		path = append(path, recursive.DbName())
 		recursive = recursive.Parent
+		if done[recursive] {
+			break
+		}
+		done[recursive] = true
 	}
 
 	return strings.Join(reverseSliceStrings(path), ".")
 }
 
 func (f *Field) ContainsMap() bool {
+	return f.containsMap(map[*Field]bool{})
+}
+
+func (f *Field) containsMap(checked map[*Field]bool) bool {
+	if checked[f] {
+		return false
+	}
+	checked[f] = true
+
 	if !f.isMap && f.Parent != nil {
-		return f.Parent.ContainsMap()
+		return f.Parent.containsMap(checked)
 	}
 
 	return f.isMap
