@@ -1,5 +1,16 @@
 {{range .Models}}
 
+type {{.IdName}} bson.ObjectId
+
+func New{{.IdName}}() {{.IdName}} {
+    return {{.IdName}}(bson.NewObjectId())
+}
+
+func {{.IdName}}Hex(s string) {{.IdName}} {
+    oid := bson.ObjectIdHex(s)
+    return {{.IdName}}(oid)
+}
+
 {{if not ($.StructIsDefined .StoreName)}}
 type {{.StoreName}} struct {
 	storable.Store
