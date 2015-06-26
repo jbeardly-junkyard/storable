@@ -6,3 +6,7 @@ type {{.QueryName}} struct {
 func (q *{{.QueryName}}) FindById(id bson.ObjectId) {
     q.AddCriteria(operators.Eq(storable.IdField, id))
 }
+
+func (q *{{.QueryName}}) FindByIds(ids ...bson.ObjectId) {
+    q.AddCriteria(operators.In(storable.IdField, ids))
+}
