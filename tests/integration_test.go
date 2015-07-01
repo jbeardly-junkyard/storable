@@ -52,10 +52,7 @@ func (s *MongoSuite) TestQuery_FindByFoo(c *C) {
 	c.Assert(err, IsNil)
 
 	q.AddCriteria(operators.Eq(Schema.MyModel.String, "bar"))
-	r, err = store.Find(q)
-	c.Assert(err, IsNil)
-
-	one, err := r.One()
+	one, err := store.MustFind(q).One()
 	c.Assert(one, IsNil)
 	c.Assert(err, IsNil)
 }

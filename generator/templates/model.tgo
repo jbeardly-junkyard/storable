@@ -21,7 +21,7 @@ func (s *{{.StoreName}}) Query() *{{.QueryName}} {
     return &{{.QueryName}}{*storable.NewBaseQuery()}
 }
 
-func (s *{{.StoreName}}) Find(query *{{.Name}}Query) (*{{.ResultSetName}}, error) {
+func (s *{{.StoreName}}) Find(query *{{.QueryName}}) (*{{.ResultSetName}}, error) {
     resultSet, err := s.Store.Find(query)
     if err != nil {
         return nil, err
@@ -30,6 +30,16 @@ func (s *{{.StoreName}}) Find(query *{{.Name}}Query) (*{{.ResultSetName}}, error
     return &{{.ResultSetName}}{*resultSet}, nil
 }
 
+func (s *{{.StoreName}}) MustFind(query *{{.QueryName}}) *{{.ResultSetName}} {
+    resultSet, err := s.Find(query)
+    if err != nil {
+        panic(err)
+    }
+
+    return resultSet
+}
+
+
 func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     resultSet, err := s.Find(query)
     if err != nil {
@@ -37,6 +47,15 @@ func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     }
 
     return resultSet.One()
+}
+
+func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
+    doc, err := s.FindOne(query)
+    if err != nil {
+        panic(err)
+    }
+
+    return doc
 }
 
 
