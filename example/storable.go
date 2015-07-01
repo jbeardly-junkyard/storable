@@ -52,6 +52,10 @@ func (q *ProductQuery) FindById(id bson.ObjectId) {
 	q.AddCriteria(operators.Eq(storable.IdField, id))
 }
 
+func (q *ProductQuery) FindByIds(ids ...bson.ObjectId) {
+	q.AddCriteria(operators.In(storable.IdField, ids))
+}
+
 type ProductResultSet struct {
 	storable.ResultSet
 }
@@ -78,43 +82,32 @@ func (r *ProductResultSet) Next() (*Product, error) {
 }
 
 type schema struct {
-	Product struct {
-		Status    storable.Field
-		CreatedAt storable.Field
-		UpdatedAt storable.Field
-		Name      storable.Field
-		Price     struct {
-			Amount   storable.Field
-			Discount storable.Field
-		}
-		Discount storable.Field
-		Url      storable.Field
-		Tags     storable.Field
-	}
+	Product *schemaProduct
+}
+
+type schemaProduct struct {
+	Status    storable.Field
+	CreatedAt storable.Field
+	UpdatedAt storable.Field
+	Name      storable.Field
+	Price     *schemaProductPrice
+	Discount  storable.Field
+	Url       storable.Field
+	Tags      storable.Field
+}
+
+type schemaProductPrice struct {
+	Amount   storable.Field
+	Discount storable.Field
 }
 
 var Schema = schema{
-	Product: struct {
-		Status    storable.Field
-		CreatedAt storable.Field
-		UpdatedAt storable.Field
-		Name      storable.Field
-		Price     struct {
-			Amount   storable.Field
-			Discount storable.Field
-		}
-		Discount storable.Field
-		Url      storable.Field
-		Tags     storable.Field
-	}{
+	Product: &schemaProduct{
 		Status:    storable.NewField("status", "int"),
 		CreatedAt: storable.NewField("createdat", "time.Time"),
 		UpdatedAt: storable.NewField("updatedat", "time.Time"),
 		Name:      storable.NewField("name", "string"),
-		Price: struct {
-			Amount   storable.Field
-			Discount storable.Field
-		}{
+		Price: &schemaProductPrice{
 			Amount:   storable.NewField("price.amount", "float64"),
 			Discount: storable.NewField("price.discount", "float64"),
 		},
