@@ -1,6 +1,7 @@
 package storable
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -83,4 +84,15 @@ func (s Sort) String() string {
 // IsEmpty returns if this sort map is empty or not
 func (s Sort) IsEmpty() bool {
 	return len(s) == 0
+}
+
+// A HookError wraps an error returned from a call to a hook method.
+type HookError struct {
+	Hook  string // Name of the hook method that returned the cause.
+	Field string // Path from the root to the field that caused the error, dot-separated.
+	Cause error  // The wrapped error.
+}
+
+func (e HookError) Error() string {
+	return fmt.Sprintf("error on %v.%v: %v", e.Field, e.Hook, e.Cause)
 }

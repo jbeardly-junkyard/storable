@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+
+	"golang.org/x/tools/go/types"
 )
 
 type Template struct {
@@ -20,7 +22,7 @@ type Template struct {
 type TemplateData struct {
 	*Package
 	Fields    []*TemplateField
-	processed map[interface{}]string
+	Processed map[interface{}]string
 }
 
 type TemplateField struct {
@@ -70,11 +72,11 @@ func (td *TemplateData) LinkStruct(path string, vi interface{}) string {
 	name := v.Elem().FieldByName("Name").Interface().(string)
 	schemaName := "schema" + path + name
 
-	if proc, ok := td.processed[vi]; ok {
+	if proc, ok := td.Processed[vi]; ok {
 		schemaName = proc
 		return name + " *" + schemaName
 	}
-	td.processed[vi] = schemaName
+	td.Processed[vi] = schemaName
 
 	td.Fields = append(td.Fields, &TemplateField{
 		Name:   schemaName,
@@ -131,13 +133,155 @@ func (td *TemplateData) StructValue(vi interface{}, done map[interface{}]bool) s
 	}
 	done[ifc] = true
 
-	ret := name + ": &" + td.processed[vi] + "{"
+	ret := name + ": &" + td.Processed[vi] + "{"
 	for _, v := range v.MethodByName("ValidFields").Call(nil)[0].Interface().([]*Field) {
 		ret += "\n" + td.GenVar(v, done)
 	}
 	ret += "\n},"
 
 	return ret
+}
+
+func (td *TemplateData) CallHooks(whenStr, actionStr string, model interface{}) string {
+	before := whenStr == "before"
+	actions := map[HookAction]bool{}
+	switch actionStr {
+	case "insert":
+		actions[InsertHook] = true
+		actions[SaveHook] = true
+	case "update":
+		actions[UpdateHook] = true
+		actions[SaveHook] = true
+	}
+
+	return callHooksGenerator{before, actions}.do(model, "")
+}
+
+type callHooksGenerator struct {
+	before  bool
+	actions map[HookAction]bool
+}
+
+type callHooksNode struct {
+	v        interface{}
+	typ      types.Type
+	elemTyp  types.Type
+	name     string
+	hooks    []Hook
+	children []*callHooksNode
+	loop     *callHooksNode
+}
+
+func (g callHooksGenerator) do(v interface{}, prefix string) string {
+	return g.generateTree(g.makeTree(v, "", nil), prefix)
+}
+
+func (g callHooksGenerator) makeTree(v interface{}, name string, stack []*callHooksNode) *callHooksNode {
+	obj := reflect.Indirect(reflect.ValueOf(v))
+	var typ types.Type
+	switch v := obj.FieldByName("CheckedNode").Interface().(type) {
+	case *types.Var:
+		typ = v.Type()
+	case types.Type:
+		typ = v
+	default:
+		panic("unexpected")
+	}
+	var elemTyp types.Type
+	switch v := typ.(type) {
+	case *types.Pointer:
+		elemTyp = v.Elem()
+	case *types.Slice:
+		elemTyp = v.Elem()
+	case *types.Map:
+		elemTyp = v.Elem()
+	default:
+		elemTyp = v
+	}
+
+	ret := &callHooksNode{
+		v:       v,
+		typ:     typ,
+		elemTyp: elemTyp,
+		name:    name,
+		hooks:   obj.FieldByName("Hooks").Interface().([]Hook),
+	}
+
+	for _, elem := range stack {
+		if elem.elemTyp == elemTyp {
+			ret.loop = elem
+			return ret
+		}
+	}
+
+	stack = append(stack, ret)
+
+	fields := obj.FieldByName("Fields").Interface().([]*Field)
+	for _, f := range fields {
+		ret.children = append(ret.children, g.makeTree(f, f.Name, stack))
+	}
+
+	return ret
+}
+
+func (g callHooksGenerator) generateTree(n *callHooksNode, prefix string) string {
+	if n.loop != nil {
+		return fmt.Sprintf("// Loop: %v.%v %v\n", prefix, n.name, n.typ)
+	}
+
+	ret := ""
+
+	wrap := func(s string) string { return s }
+	varName := func(s string) string { return s }
+	typ := n.typ
+out:
+	for i := 0; ; i++ {
+		idx := fmt.Sprintf("k%d", i)
+		prevWrap, prevVarName := wrap, varName
+		switch vtyp := typ.(type) {
+		case *types.Pointer:
+			wrap = func(s string) string { return prevWrap("if doc" + prevVarName(prefix) + " != nil {\n" + s + "\n}\n") }
+			typ = vtyp.Elem()
+		case *types.Slice, *types.Map:
+			wrap = func(s string) string {
+				return prevWrap(fmt.Sprintf("for %v, _ := range doc%v {\n%v\n}\n", idx, prevVarName(prefix), s))
+			}
+			varName = func(s string) string { return prevVarName(s) + "[" + idx + "]" }
+			typ = vtyp.(interface {
+				Elem() types.Type
+			}).Elem()
+		default:
+			break out
+		}
+	}
+
+	for _, hook := range n.hooks {
+		if hook.Before == g.before && g.actions[hook.Action] {
+			ret += g.generateCall(varName(prefix), hook.MethodName())
+		}
+	}
+
+	for _, cn := range n.children {
+		ret += g.generateTree(cn, varName(prefix)+"."+cn.name)
+	}
+
+	if len(ret) > 0 {
+		ret = wrap(ret)
+	}
+
+	return ret
+}
+
+func (g callHooksGenerator) generateCall(sel string, method string) string {
+	return fmt.Sprintf(
+		`if err := doc%s.%s(); err != nil {
+		return storable.HookError{
+			Hook: "%[2]s",
+			Field: "%[1]s",
+			Cause: err,
+		}
+	}
+	`, sel, method)
 }
 
 func prettyfy(input []byte, wr io.Writer) error {

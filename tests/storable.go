@@ -27,6 +27,15 @@ func (s *AnotherModelStore) Find(query *AnotherModelQuery) (*AnotherModelResultS
 	return &AnotherModelResultSet{*resultSet}, nil
 }
 
+func (s *AnotherModelStore) MustFind(query *AnotherModelQuery) *AnotherModelResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
 func (s *AnotherModelStore) FindOne(query *AnotherModelQuery) (*AnotherModel, error) {
 	resultSet, err := s.Find(query)
 	if err != nil {
@@ -34,6 +43,35 @@ func (s *AnotherModelStore) FindOne(query *AnotherModelQuery) (*AnotherModel, er
 	}
 
 	return resultSet.One()
+}
+
+func (s *AnotherModelStore) MustFindOne(query *AnotherModelQuery) *AnotherModel {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *AnotherModelStore) Update(doc *AnotherModel) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type AnotherModelQuery struct {
@@ -101,6 +139,15 @@ func (s *MyModelStore) Find(query *MyModelQuery) (*MyModelResultSet, error) {
 	return &MyModelResultSet{*resultSet}, nil
 }
 
+func (s *MyModelStore) MustFind(query *MyModelQuery) *MyModelResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
 func (s *MyModelStore) FindOne(query *MyModelQuery) (*MyModel, error) {
 	resultSet, err := s.Find(query)
 	if err != nil {
@@ -108,6 +155,35 @@ func (s *MyModelStore) FindOne(query *MyModelQuery) (*MyModel, error) {
 	}
 
 	return resultSet.One()
+}
+
+func (s *MyModelStore) MustFindOne(query *MyModelQuery) *MyModel {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *MyModelStore) Insert(doc *MyModel) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *MyModelStore) Update(doc *MyModel) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type MyModelQuery struct {

@@ -35,6 +35,15 @@ func (s *ProductStore) Find(query *ProductQuery) (*ProductResultSet, error) {
 	return &ProductResultSet{*resultSet}, nil
 }
 
+func (s *ProductStore) MustFind(query *ProductQuery) *ProductResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
 func (s *ProductStore) FindOne(query *ProductQuery) (*Product, error) {
 	resultSet, err := s.Find(query)
 	if err != nil {
@@ -42,6 +51,70 @@ func (s *ProductStore) FindOne(query *ProductQuery) (*Product, error) {
 	}
 
 	return resultSet.One()
+}
+
+func (s *ProductStore) MustFindOne(query *ProductQuery) *Product {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *ProductStore) Insert(doc *Product) error {
+	if err := doc.BeforeInsert(); err != nil {
+		return storable.HookError{
+			Hook:  "BeforeInsert",
+			Field: "doc",
+			Cause: err,
+		}
+	}
+	if err := doc.BeforeSave(); err != nil {
+		return storable.HookError{
+			Hook:  "BeforeSave",
+			Field: "doc",
+			Cause: err,
+		}
+	}
+	if err := doc.Status.BeforeInsert(); err != nil {
+		return storable.HookError{
+			Hook:  "BeforeInsert",
+			Field: "doc.Status",
+			Cause: err,
+		}
+	}
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+	if err := doc.Status.AfterInsert(); err != nil {
+		return storable.HookError{
+			Hook:  "AfterInsert",
+			Field: "doc.Status",
+			Cause: err,
+		}
+	}
+
+	return nil
+}
+
+func (s *ProductStore) Update(doc *Product) error {
+	if err := doc.BeforeSave(); err != nil {
+		return storable.HookError{
+			Hook:  "BeforeSave",
+			Field: "doc",
+			Cause: err,
+		}
+	}
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type ProductQuery struct {
