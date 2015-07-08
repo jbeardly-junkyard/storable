@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	_ "golang.org/x/tools/go/gcimporter"
 	"golang.org/x/tools/go/types"
@@ -93,15 +94,16 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 }
 
 func (p *Processor) processPackage(pkg *Package) {
-	pkg.Models = make([]*Model, 0)
-	pkg.Structs = make([]string, 0)
-	pkg.Functions = make([]string, 0)
+	var newFuncs []*types.Func
 
 	s := p.TypesPkg.Scope()
 	for _, name := range s.Names() {
 		fun := p.tryGetFunction(s.Lookup(name))
 		if fun != nil {
 			pkg.Functions = append(pkg.Functions, name)
+			if strings.HasPrefix(fun.Name(), "New") {
+				newFuncs = append(newFuncs, fun)
+			}
 		}
 
 		str := p.tryGetStruct(s.Lookup(name).Type())
@@ -112,8 +114,37 @@ func (p *Processor) processPackage(pkg *Package) {
 		if m := p.processStruct(name, str); m != nil {
 			pkg.Models = append(pkg.Models, m)
 			m.CheckedNode = s.Lookup(name).Type().(*types.Named)
+			m.Package = p.TypesPkg
 		} else {
 			pkg.Structs = append(pkg.Structs, name)
+		}
+	}
+
+	for _, fun := range newFuncs {
+		p.tryMatchNewFunc(pkg.Models, fun)
+	}
+}
+
+func (p *Processor) tryMatchNewFunc(models []*Model, fun *types.Func) {
+	modelName := fun.Name()[len("New"):]
+
+	for _, m := range models {
+		if m.Name != modelName {
+			continue
+		}
+
+		sig := fun.Type().(*types.Signature)
+
+		if sig.Recv() != nil {
+			continue
+		}
+
+		res := sig.Results()
+		for i := 0; i < res.Len(); i++ {
+			if isTypeOrPtrTo(res.At(i).Type(), m.CheckedNode) {
+				m.NewFunc = fun
+				return
+			}
 		}
 	}
 }

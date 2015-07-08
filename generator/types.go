@@ -71,6 +71,8 @@ type Model struct {
 	Type        string
 	Fields      []*Field
 	CheckedNode *types.Named
+	NewFunc     *types.Func
+	Package     *types.Package
 
 	Hooks []Hook
 }
@@ -107,6 +109,89 @@ func (m *Model) ValidFields() []*Field {
 	}
 
 	return fields
+}
+
+func (m *Model) NewArgs() string {
+	if m.NewFunc == nil {
+		return ""
+	}
+
+	var ret []string
+	sig := m.NewFunc.Type().(*types.Signature)
+
+	for i := 0; i < sig.Params().Len(); i++ {
+		param := sig.Params().At(i)
+		typeName := types.TypeString(param.Type(), types.RelativeTo(m.Package))
+		ret = append(ret, fmt.Sprintf("%v %v", param.Name(), typeName))
+	}
+
+	return strings.Join(ret, ", ")
+}
+
+func (m *Model) NewArgVars() string {
+	if m.NewFunc == nil {
+		return ""
+	}
+
+	var ret []string
+	sig := m.NewFunc.Type().(*types.Signature)
+
+	for i := 0; i < sig.Params().Len(); i++ {
+		ret = append(ret, sig.Params().At(i).Name())
+	}
+
+	return strings.Join(ret, ", ")
+}
+
+func (m *Model) NewReturns() string {
+	if m.NewFunc == nil {
+		return "(doc *" + m.Name + ")"
+	}
+
+	var ret []string
+	hasError := false
+	sig := m.NewFunc.Type().(*types.Signature)
+
+	for i := 0; i < sig.Results().Len(); i++ {
+		res := sig.Results().At(i)
+		typeName := types.TypeString(res.Type(), types.RelativeTo(m.Package))
+		if isTypeOrPtrTo(res.Type(), m.CheckedNode) {
+			ret = append(ret, "doc "+typeName)
+		} else if isBuiltinError(res.Type()) && !hasError {
+			ret = append(ret, "err "+typeName)
+			hasError = true
+		} else if res.Name() != "" {
+			ret = append(ret, fmt.Sprintf("r%d %v", i, res.Name()))
+		} else {
+			ret = append(ret, fmt.Sprintf("r%d %v", i, typeName))
+		}
+	}
+
+	return "(" + strings.Join(ret, ", ") + ")"
+}
+
+func (m *Model) NewRetVars() string {
+	if m.NewFunc == nil {
+		return "doc"
+	}
+
+	var ret []string
+	hasError := false
+	sig := m.NewFunc.Type().(*types.Signature)
+
+	for i := 0; i < sig.Results().Len(); i++ {
+		res := sig.Results().At(i)
+		if isTypeOrPtrTo(res.Type(), m.CheckedNode) {
+			ret = append(ret, "doc")
+		} else if isBuiltinError(res.Type()) && !hasError {
+			ret = append(ret, "err")
+			hasError = true
+		} else {
+			ret = append(ret, fmt.Sprintf("r%d", i))
+		}
+	}
+
+	return strings.Join(ret, ", ")
 }
 
 type Function struct {
@@ -284,3 +369,17 @@ const (
 	UpdateHook HookAction = "Update"
 	SaveHook   HookAction = "Save"
 )
+
+func isTypeOrPtrTo(ptr types.Type, named *types.Named) bool {
+	switch ty := ptr.(type) {
+	case *types.Pointer:
+		if elem, ok := ty.Elem().(*types.Named); ok && elem == named {
+			return true
+		}
+	case *types.Named:
+		if ty == named {
+			return true
+		}
+	}
+	return false
+}

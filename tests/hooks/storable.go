@@ -15,11 +15,10 @@ func NewRecurStore(db *mgo.Database) *RecurStore {
 	return &RecurStore{*storable.NewStore(db, "recur")}
 }
 
-func (s *RecurStore) New() *Recur {
-	doc := &Recur{}
+func (s *RecurStore) New() (doc *Recur) {
+	doc = &Recur{}
 	doc.SetIsNew(true)
-
-	return doc
+	return
 }
 
 func (s *RecurStore) Query() *RecurQuery {

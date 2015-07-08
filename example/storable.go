@@ -15,11 +15,10 @@ func NewProductStore(db *mgo.Database) *ProductStore {
 	return &ProductStore{*storable.NewStore(db, "products")}
 }
 
-func (s *ProductStore) New() *Product {
-	doc := &Product{}
+func (s *ProductStore) New(name string, price Price) (doc *Product, err error) {
+	doc, err = NewProduct(name, price)
 	doc.SetIsNew(true)
-
-	return doc
+	return
 }
 
 func (s *ProductStore) Query() *ProductQuery {
@@ -66,21 +65,21 @@ func (s *ProductStore) Insert(doc *Product) error {
 	if err := doc.BeforeInsert(); err != nil {
 		return storable.HookError{
 			Hook:  "BeforeInsert",
-			Field: "doc",
+			Field: "",
 			Cause: err,
 		}
 	}
 	if err := doc.BeforeSave(); err != nil {
 		return storable.HookError{
 			Hook:  "BeforeSave",
-			Field: "doc",
+			Field: "",
 			Cause: err,
 		}
 	}
 	if err := doc.Status.BeforeInsert(); err != nil {
 		return storable.HookError{
 			Hook:  "BeforeInsert",
-			Field: "doc.Status",
+			Field: ".Status",
 			Cause: err,
 		}
 	}
@@ -92,7 +91,7 @@ func (s *ProductStore) Insert(doc *Product) error {
 	if err := doc.Status.AfterInsert(); err != nil {
 		return storable.HookError{
 			Hook:  "AfterInsert",
-			Field: "doc.Status",
+			Field: ".Status",
 			Cause: err,
 		}
 	}
@@ -104,7 +103,7 @@ func (s *ProductStore) Update(doc *Product) error {
 	if err := doc.BeforeSave(); err != nil {
 		return storable.HookError{
 			Hook:  "BeforeSave",
-			Field: "doc",
+			Field: "",
 			Cause: err,
 		}
 	}
