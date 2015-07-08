@@ -7,11 +7,18 @@ import (
 	"testing"
 
 	"golang.org/x/tools/go/types"
+	. "gopkg.in/check.v1"
 
 	"github.com/tyba/storable/generator"
 )
 
-func TestRecursiveStruct(t *testing.T) {
+func Test(t *testing.T) { TestingT(t) }
+
+type ProcessorSuite struct{}
+
+var _ = Suite(&ProcessorSuite{})
+
+func (s *ProcessorSuite) TestRecursiveStruct(c *C) {
 	fixtureSrc := `
 	package fixture
 
@@ -30,18 +37,14 @@ func TestRecursiveStruct(t *testing.T) {
 	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{astFile}, nil)
 
 	prc := generator.NewProcessor("fixture", nil)
-	genPkg, err := prc.ProcessTypesPkg(p)
+	prc.TypesPkg = p
+	genPkg, err := prc.ProcessTypesPkg()
 
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if genPkg.Models[0].Fields[2].Fields[2] != genPkg.Models[0].Fields[2] {
-		t.Fatalf("direct type recursivity not handled correctly.")
-	}
+	c.Assert(err, IsNil)
+	c.Assert(genPkg.Models[0].Fields[2].Fields[2], Equals, genPkg.Models[0].Fields[2], Commentf("direct type recursivity not handled correctly."))
 }
 
-func TestDeepRecursiveStruct(t *testing.T) {
+func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
 	fixtureSrc := `
 	package fixture
 
@@ -64,13 +67,9 @@ func TestDeepRecursiveStruct(t *testing.T) {
 	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{astFile}, nil)
 
 	prc := generator.NewProcessor("fixture", nil)
-	genPkg, err := prc.ProcessTypesPkg(p)
+	prc.TypesPkg = p
+	genPkg, err := prc.ProcessTypesPkg()
 
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if genPkg.Models[0].Fields[2].Fields[0].Fields[2] != genPkg.Models[0].Fields[2] {
-		t.Fatalf("indirect type recursivity not handled correctly.")
-	}
+	c.Assert(err, IsNil)
+	c.Assert(genPkg.Models[0].Fields[2].Fields[0].Fields[2], Equals, genPkg.Models[0].Fields[2], Commentf("direct type recursivity not handled correctly."))
 }

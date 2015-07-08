@@ -58,6 +58,27 @@ func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
     return doc
 }
 
+func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
+    {{$.CallHooks "before" "insert" .}}
+    err := s.Store.Insert(doc)
+    if err != nil {
+        return err
+    }
+    {{$.CallHooks "after" "insert" .}}
+
+    return nil
+}
+
+func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
+    {{$.CallHooks "before" "update" .}}
+    err := s.Store.Update(doc)
+    if err != nil {
+        return err
+    }
+    {{$.CallHooks "after" "update" .}}
+
+    return nil
+}
 
 {{template "query" .}}
 

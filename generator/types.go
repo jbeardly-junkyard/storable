@@ -70,7 +70,9 @@ type Model struct {
 	Collection  string
 	Type        string
 	Fields      []*Field
-	CheckedNode *types.Struct
+	CheckedNode *types.Named
+
+	Hooks []Hook
 }
 
 func NewModel(n string) *Model {
@@ -123,6 +125,7 @@ type Field struct {
 	Fields      []*Field
 	Parent      *Field
 	isMap       bool
+	Hooks       []Hook
 }
 
 func NewField(n, t string, tag reflect.StructTag) *Field {
@@ -254,3 +257,30 @@ func reverseSliceStrings(input []string) []string {
 
 	return append(reverseSliceStrings(input[1:]), input[0])
 }
+
+type Hook struct {
+	Before bool
+	Action HookAction
+}
+
+func (h Hook) MethodName() string {
+	var ret string
+
+	if h.Before {
+		ret += "Before"
+	} else {
+		ret += "After"
+	}
+
+	ret += string(h.Action)
+
+	return ret
+}
+
+type HookAction string
+
+const (
+	InsertHook HookAction = "Insert"
+	UpdateHook HookAction = "Update"
+	SaveHook   HookAction = "Save"
+)
