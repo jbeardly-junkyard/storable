@@ -1,6 +1,7 @@
 package example
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -21,6 +22,17 @@ type Product struct {
 	Discount float64
 	Url      string
 	Tags     []string
+}
+
+func NewProduct(name string, price Price) (*Product, error) {
+	if len(name) == 0 {
+		return nil, errors.New("name should not be empty.")
+	}
+	return &Product{
+		Name:   name,
+		Price:  price,
+		Status: Draft,
+	}, nil
 }
 
 func (p *Product) BeforeInsert() error {
