@@ -16,7 +16,7 @@ func NewProductStore(db *mgo.Database) *ProductStore {
 }
 
 func (s *ProductStore) New(name string, price Price) (doc *Product, err error) {
-	doc, err = NewProduct(name, price)
+	doc, err = newProduct(name, price)
 	doc.SetIsNew(true)
 	return
 }

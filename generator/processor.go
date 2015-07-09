@@ -101,7 +101,7 @@ func (p *Processor) processPackage(pkg *Package) {
 		fun := p.tryGetFunction(s.Lookup(name))
 		if fun != nil {
 			pkg.Functions = append(pkg.Functions, name)
-			if strings.HasPrefix(fun.Name(), "New") {
+			if strings.HasPrefix(fun.Name(), "new") {
 				newFuncs = append(newFuncs, fun)
 			}
 		}
@@ -126,7 +126,7 @@ func (p *Processor) processPackage(pkg *Package) {
 }
 
 func (p *Processor) tryMatchNewFunc(models []*Model, fun *types.Func) {
-	modelName := fun.Name()[len("New"):]
+	modelName := fun.Name()[len("new"):]
 
 	for _, m := range models {
 		if m.Name != modelName {
