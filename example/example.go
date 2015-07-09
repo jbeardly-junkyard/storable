@@ -24,7 +24,7 @@ type Product struct {
 	Tags     []string
 }
 
-func NewProduct(name string, price Price) (*Product, error) {
+func newProduct(name string, price Price) (*Product, error) {
 	if len(name) == 0 {
 		return nil, errors.New("name should not be empty.")
 	}
