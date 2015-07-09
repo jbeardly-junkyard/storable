@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"golang.org/x/tools/go/types"
 )
@@ -123,7 +124,11 @@ func (m *Model) NewArgs() string {
 	for i := 0; i < sig.Params().Len(); i++ {
 		param := sig.Params().At(i)
 		typeName := typeString(param.Type(), m.Package)
-		ret = append(ret, fmt.Sprintf("%v %v", param.Name(), typeName))
+		paramName := param.Name()
+		if paramName == "s" {
+			paramName = fmt.Sprintf("arg%v", i)
+		}
+		ret = append(ret, fmt.Sprintf("%v %v", paramName, typeName))
 	}
 
 	return strings.Join(ret, ", ")
@@ -138,7 +143,11 @@ func (m *Model) NewArgVars() string {
 	sig := m.NewFunc.Type().(*types.Signature)
 
 	for i := 0; i < sig.Params().Len(); i++ {
-		ret = append(ret, sig.Params().At(i).Name())
+		paramName := sig.Params().At(i).Name()
+		if paramName == "s" {
+			paramName = fmt.Sprintf("arg%v", i)
+		}
+		ret = append(ret, paramName)
 	}
 
 	return strings.Join(ret, ", ")
@@ -388,5 +397,14 @@ func isTypeOrPtrTo(ptr types.Type, named *types.Named) bool {
 func typeString(ty types.Type, pkg *types.Package) string {
 	ret := types.TypeString(ty, types.RelativeTo(pkg))
 	parts := strings.Split(ret, "/")
-	return parts[len(parts)-1]
+	prefix := ""
+	if len(parts) > 1 {
+		for _, r := range parts[0] {
+			if r == '.' || unicode.IsLetter(r) {
+				break
+			}
+			prefix += string(r)
+		}
+	}
+	return prefix + parts[len(parts)-1]
 }
