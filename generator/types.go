@@ -57,6 +57,7 @@ func (p *Package) FunctionIsDefined(name string) bool {
 }
 
 const (
+	IdNamePattern        = "%sId"
 	StoreNamePattern     = "%sStore"
 	QueryNamePattern     = "%sQuery"
 	ResultSetNamePattern = "%sResultSet"
@@ -64,6 +65,7 @@ const (
 
 type Model struct {
 	Name          string
+	IdName        string
 	StoreName     string
 	QueryName     string
 	ResultSetName string
@@ -82,6 +84,7 @@ type Model struct {
 func NewModel(n string) *Model {
 	return &Model{
 		Name:          n,
+		IdName:        fmt.Sprintf(IdNamePattern, n),
 		StoreName:     fmt.Sprintf(StoreNamePattern, n),
 		QueryName:     fmt.Sprintf(QueryNamePattern, n),
 		ResultSetName: fmt.Sprintf(ResultSetNamePattern, n),
