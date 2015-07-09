@@ -26,13 +26,18 @@ func (r Recur) BeforeInsert() error {
 	return nil
 }
 
-func (r *Recur) BeforeUpdate() error {
-	Log = append(Log, "Called BeforeUpdate on *Recur with Foo "+r.Foo)
+func (r *Recur) BeforeUpdate(s *RecurStore) error {
+	Log = append(Log, "Called BeforeUpdate(s) on *Recur with Foo "+r.Foo)
 	return nil
 }
 
 func (r *Recur) BeforeSave() error {
 	Log = append(Log, "Called BeforeSave on *Recur with Foo "+r.Foo)
+	return nil
+}
+
+func (s *RecurStore) BeforeSave() error {
+	panic("Shouldn't have been called!")
 	return nil
 }
 

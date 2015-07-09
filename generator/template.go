@@ -142,7 +142,7 @@ func (td *TemplateData) StructValue(vi interface{}, done map[interface{}]bool) s
 	return ret
 }
 
-func (td *TemplateData) CallHooks(whenStr, actionStr string, model interface{}) string {
+func (td *TemplateData) CallHooks(whenStr, actionStr string, model *Model) string {
 	before := whenStr == "before"
 	actions := map[HookAction]bool{}
 	switch actionStr {
@@ -172,8 +172,10 @@ type callHooksNode struct {
 	loop     *callHooksNode
 }
 
-func (g callHooksGenerator) do(v interface{}, prefix string) string {
-	return g.generateTree(g.makeTree(v, "", nil), prefix)
+func (g callHooksGenerator) do(model *Model, prefix string) string {
+	modelHooks := g.generateTree(g.makeTree(model, "", nil), prefix)
+	storeHooks := g.generateStoreHooks(model)
+	return modelHooks + storeHooks
 }
 
 func (g callHooksGenerator) makeTree(v interface{}, name string, stack []*callHooksNode) *callHooksNode {
@@ -282,6 +284,24 @@ func (g callHooksGenerator) generateCall(sel string, method string) string {
 		}
 	}
 	`, sel, method)
+}
+
+func (g callHooksGenerator) generateStoreHooks(model *Model) string {
+	ret := ""
+	for _, hook := range model.StoreHooks {
+		if hook.Before == g.before && g.actions[hook.Action] {
+			ret += fmt.Sprintf(
+				`if err := doc.%s(s); err != nil {
+			return storable.HookError{
+				Hook: "%[1]s",
+				Field: ".",
+				Cause: err,
+			}
+		}
+		`, hook.MethodName())
+		}
+	}
+	return ret
 }
 
 func prettyfy(input []byte, wr io.Writer) error {

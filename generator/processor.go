@@ -185,6 +185,7 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 
 	p.procesBaseField(m, m.Fields[base])
 	p.findHooks(m)
+	p.findStoreHooks(m)
 
 	return m
 }
@@ -270,7 +271,7 @@ func joinDirectory(directory string, files []string) []string {
 
 func (p *Processor) findHooks(m *Model) {
 	modelType := types.NewPointer(p.TypesPkg.Scope().Lookup(m.Name).Type())
-	m.Hooks = p.hookMethods(modelType)
+	m.Hooks = p.hookMethods(modelType, nil)
 
 	done := map[interface{}]bool{modelType: true}
 	for _, f := range m.Fields {
@@ -305,14 +306,14 @@ out:
 		typ = types.NewPointer(typ)
 	}
 
-	f.Hooks = p.hookMethods(typ)
+	f.Hooks = p.hookMethods(typ, nil)
 
 	for _, f := range f.Fields {
 		p.findFieldHooks(f, done)
 	}
 }
 
-func (p *Processor) hookMethods(t types.Type) []Hook {
+func (p *Processor) hookMethods(t types.Type, storeOf *Model) []Hook {
 	var hooks []Hook
 
 	ms := types.NewMethodSet(t)
@@ -325,11 +326,11 @@ func (p *Processor) hookMethods(t types.Type) []Hook {
 
 	for _, action := range actions {
 		hook := Hook{Before: false, Action: action}
-		if p.hasHookMethod(ms, hook.MethodName()) {
+		if p.hasHookMethod(ms, hook.MethodName(), storeOf) {
 			hooks = append(hooks, hook)
 		}
 		hook.Before = true
-		if p.hasHookMethod(ms, hook.MethodName()) {
+		if p.hasHookMethod(ms, hook.MethodName(), storeOf) {
 			hooks = append(hooks, hook)
 		}
 	}
@@ -337,7 +338,7 @@ func (p *Processor) hookMethods(t types.Type) []Hook {
 	return hooks
 }
 
-func (p *Processor) hasHookMethod(ms *types.MethodSet, methodName string) bool {
+func (p *Processor) hasHookMethod(ms *types.MethodSet, methodName string, storeOf *Model) bool {
 	sel := ms.Lookup(p.TypesPkg, methodName)
 	if sel == nil {
 		return false
@@ -351,8 +352,29 @@ func (p *Processor) hasHookMethod(ms *types.MethodSet, methodName string) bool {
 		return false
 	}
 
-	if params := sig.Params(); params != nil && params.Len() > 0 {
-		return false
+	params := sig.Params()
+	if storeOf != nil {
+		if params == nil || params.Len() != 1 {
+			return false
+		}
+		ty, ok := params.At(0).Type().(*types.Pointer)
+		if !ok {
+			return false
+		}
+		named, ok := ty.Elem().(*types.Named)
+		if ok {
+			if named.Obj().Name() != storeOf.Name+"Store" {
+				return false
+			}
+		} else {
+			if ty.Elem() != types.Typ[types.Invalid] {
+				return false
+			}
+		}
+	} else {
+		if params != nil && params.Len() > 0 {
+			return false
+		}
 	}
 
 	ret := sig.Results()
@@ -361,6 +383,11 @@ func (p *Processor) hasHookMethod(ms *types.MethodSet, methodName string) bool {
 	}
 
 	return true
+}
+
+func (p *Processor) findStoreHooks(m *Model) {
+	modelType := types.NewPointer(p.TypesPkg.Scope().Lookup(m.Name).Type())
+	m.StoreHooks = p.hookMethods(modelType, m)
 }
 
 func isBuiltinError(typ types.Type) bool {

@@ -74,7 +74,8 @@ type Model struct {
 	NewFunc     *types.Func
 	Package     *types.Package
 
-	Hooks []Hook
+	Hooks      []Hook
+	StoreHooks []Hook
 }
 
 func NewModel(n string) *Model {

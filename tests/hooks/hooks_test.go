@@ -29,18 +29,19 @@ func (s *HooksSuite) TestFindHooks(c *C) {
 	genPkg := s.fixture(c)
 
 	m := genPkg.Models[0]
-	c.Assert(len(m.Hooks), Equals, 3)
+	c.Assert(len(m.Hooks), Equals, 2)
 	c.Assert(m.Hooks[0], Equals, generator.Hook{
 		Before: true,
 		Action: generator.InsertHook,
 	})
 	c.Assert(m.Hooks[1], Equals, generator.Hook{
 		Before: true,
-		Action: generator.UpdateHook,
-	})
-	c.Assert(m.Hooks[2], Equals, generator.Hook{
-		Before: true,
 		Action: generator.SaveHook,
+	})
+	c.Assert(len(m.StoreHooks), Equals, 1)
+	c.Assert(m.StoreHooks[0], Equals, generator.Hook{
+		Before: true,
+		Action: generator.UpdateHook,
 	})
 
 	c.Assert(len(m.Fields[2].Hooks), Equals, 3)
@@ -117,16 +118,16 @@ func (s *HooksSuite) TestGenerateHooks(c *C) {
 	doc.MyAfterFailer = &hooks.AfterFailer{}
 
 	err = store.Update(doc)
-	c.Assert(hooks.Log[:2], DeepEquals, []string{
-		"Called BeforeUpdate on *Recur with Foo Bar",
+	c.Assert(hooks.Log[:1], DeepEquals, []string{
 		"Called BeforeSave on *Recur with Foo Bar",
 	})
-	c.Assert(s.sortedStrs(hooks.Log[2:5]), DeepEquals, s.sortedStrs([]string{
+	c.Assert(s.sortedStrs(hooks.Log[1:4]), DeepEquals, s.sortedStrs([]string{
 		"Called BeforeSave on Thing 123",
 		"Called BeforeSave on Thing 456",
 		"Called BeforeSave on Thing 789",
 	}))
-	c.Assert(hooks.Log[5:], DeepEquals, []string{
+	c.Assert(hooks.Log[4:], DeepEquals, []string{
+		"Called BeforeUpdate(s) on *Recur with Foo Bar",
 		"Called AfterUpdate on Other with Name MyOther",
 		"Called AfterSave on *Other with Name MyOther",
 		"Called AfterSave on *AfterFailer",
@@ -141,16 +142,16 @@ func (s *HooksSuite) TestGenerateHooks(c *C) {
 	doc.MyAfterFailer = nil
 
 	err = store.Update(doc)
-	c.Assert(hooks.Log[:2], DeepEquals, []string{
-		"Called BeforeUpdate on *Recur with Foo Bar",
+	c.Assert(hooks.Log[:1], DeepEquals, []string{
 		"Called BeforeSave on *Recur with Foo Bar",
 	})
-	c.Assert(s.sortedStrs(hooks.Log[2:5]), DeepEquals, s.sortedStrs([]string{
+	c.Assert(s.sortedStrs(hooks.Log[1:4]), DeepEquals, s.sortedStrs([]string{
 		"Called BeforeSave on Thing 123",
 		"Called BeforeSave on Thing 456",
 		"Called BeforeSave on Thing 789",
 	}))
-	c.Assert(hooks.Log[5:], DeepEquals, []string{
+	c.Assert(hooks.Log[4:], DeepEquals, []string{
+		"Called BeforeUpdate(s) on *Recur with Foo Bar",
 		"Called AfterUpdate on Other with Name MyOther",
 		"Called AfterSave on *Other with Name MyOther",
 	})
@@ -160,11 +161,13 @@ func (s *HooksSuite) TestGenerateHooks(c *C) {
 func (s *HooksSuite) fixture(c *C) *generator.Package {
 	_, thisFile, _, _ := func() (uintptr, string, int, bool) { return runtime.Caller(0) }()
 	f, _ := os.Open(filepath.Dir(thisFile) + "/fixture.go")
+	stof, _ := os.Open(filepath.Dir(thisFile) + "/storable.go")
 
 	fset := &token.FileSet{}
-	astFile, _ := parser.ParseFile(fset, "fixture.go", f, 0)
+	fAST, _ := parser.ParseFile(fset, "fixture.go", f, 0)
+	stofAST, _ := parser.ParseFile(fset, "storable.go", stof, 0)
 	cfg := &types.Config{}
-	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{astFile}, nil)
+	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{fAST, stofAST}, nil)
 
 	prc := generator.NewProcessor("fixture", nil)
 	prc.TypesPkg = p

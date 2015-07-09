@@ -161,13 +161,6 @@ func (s *RecurStore) Insert(doc *Recur) error {
 }
 
 func (s *RecurStore) Update(doc *Recur) error {
-	if err := doc.BeforeUpdate(); err != nil {
-		return storable.HookError{
-			Hook:  "BeforeUpdate",
-			Field: "",
-			Cause: err,
-		}
-	}
 	if err := doc.BeforeSave(); err != nil {
 		return storable.HookError{
 			Hook:  "BeforeSave",
@@ -214,6 +207,13 @@ func (s *RecurStore) Update(doc *Recur) error {
 
 		}
 
+	}
+	if err := doc.BeforeUpdate(s); err != nil {
+		return storable.HookError{
+			Hook:  "BeforeUpdate",
+			Field: ".",
+			Cause: err,
+		}
 	}
 
 	err := s.Store.Update(doc)
