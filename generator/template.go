@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/build"
-	"go/format"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 	"text/template"
 
 	"golang.org/x/tools/go/types"
+	"golang.org/x/tools/imports"
 )
 
 type Template struct {
@@ -305,7 +305,7 @@ func (g callHooksGenerator) generateStoreHooks(model *Model) string {
 }
 
 func prettyfy(input []byte, wr io.Writer) error {
-	output, err := format.Source(input)
+	output, err := imports.Process("storable.go", input, nil)
 	if err != nil {
 		printDocumentWithNumbers(string(input))
 		return err

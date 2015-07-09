@@ -1,6 +1,8 @@
 package example
 
 import (
+	"time"
+
 	"github.com/tyba/storable"
 	"github.com/tyba/storable/operators"
 	"gopkg.in/mgo.v2"
@@ -15,8 +17,8 @@ func NewProductStore(db *mgo.Database) *ProductStore {
 	return &ProductStore{*storable.NewStore(db, "products")}
 }
 
-func (s *ProductStore) New(name string, price Price) (doc *Product, err error) {
-	doc, err = newProduct(name, price)
+func (s *ProductStore) New(name string, price Price, createdAt time.Time) (doc *Product, err error) {
+	doc, err = newProduct(name, price, createdAt)
 	doc.SetIsNew(true)
 	return
 }

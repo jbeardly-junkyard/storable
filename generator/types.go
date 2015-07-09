@@ -122,7 +122,7 @@ func (m *Model) NewArgs() string {
 
 	for i := 0; i < sig.Params().Len(); i++ {
 		param := sig.Params().At(i)
-		typeName := types.TypeString(param.Type(), types.RelativeTo(m.Package))
+		typeName := typeString(param.Type(), m.Package)
 		ret = append(ret, fmt.Sprintf("%v %v", param.Name(), typeName))
 	}
 
@@ -155,7 +155,7 @@ func (m *Model) NewReturns() string {
 
 	for i := 0; i < sig.Results().Len(); i++ {
 		res := sig.Results().At(i)
-		typeName := types.TypeString(res.Type(), types.RelativeTo(m.Package))
+		typeName := typeString(res.Type(), m.Package)
 		if isTypeOrPtrTo(res.Type(), m.CheckedNode) {
 			ret = append(ret, "doc "+typeName)
 		} else if isBuiltinError(res.Type()) && !hasError {
@@ -383,4 +383,10 @@ func isTypeOrPtrTo(ptr types.Type, named *types.Named) bool {
 		}
 	}
 	return false
+}
+
+func typeString(ty types.Type, pkg *types.Package) string {
+	ret := types.TypeString(ty, types.RelativeTo(pkg))
+	parts := strings.Split(ret, "/")
+	return parts[len(parts)-1]
 }

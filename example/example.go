@@ -24,14 +24,15 @@ type Product struct {
 	Tags     []string
 }
 
-func newProduct(name string, price Price) (*Product, error) {
+func newProduct(name string, price Price, createdAt time.Time) (*Product, error) {
 	if len(name) == 0 {
 		return nil, errors.New("name should not be empty.")
 	}
 	return &Product{
-		Name:   name,
-		Price:  price,
-		Status: Draft,
+		Name:      name,
+		Price:     price,
+		CreatedAt: createdAt,
+		Status:    Draft,
 	}, nil
 }
 

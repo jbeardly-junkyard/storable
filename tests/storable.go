@@ -8,7 +8,7 @@ import (
 )
 
 func (s *AnotherModelStore) New() (doc *AnotherModel) {
-	doc = NewAnotherModel()
+	doc = &AnotherModel{}
 	doc.SetIsNew(true)
 	return
 }
@@ -246,20 +246,20 @@ type schemaMyModel struct {
 }
 
 type schemaMyModelNestedRef struct {
-	X       storable.Map
-	Y       storable.Map
+	X       storable.Field
+	Y       storable.Field
 	Another *schemaMyModelNestedRefAnother
 }
 
 type schemaMyModelNested struct {
-	X       storable.Map
-	Y       storable.Map
+	X       storable.Field
+	Y       storable.Field
 	Another *schemaMyModelNestedRefAnother
 }
 
 type schemaMyModelNestedSlice struct {
-	X       storable.Map
-	Y       storable.Map
+	X       storable.Field
+	Y       storable.Field
 	Another *schemaMyModelNestedRefAnother
 }
 
@@ -269,13 +269,13 @@ type schemaMyModelInlineStruct struct {
 }
 
 type schemaMyModelNestedRefAnother struct {
-	X storable.Map
-	Y storable.Map
+	X storable.Field
+	Y storable.Field
 }
 
 type schemaMyModelInlineStructMapOfSomeType struct {
-	X       storable.Map
-	Y       storable.Map
+	X       storable.Field
+	Y       storable.Field
 	Another *schemaMyModelNestedRefAnother
 }
 
@@ -290,21 +290,21 @@ var Schema = schema{
 		Slice:      storable.NewField("slice", "string"),
 		SliceAlias: storable.NewField("slicealias", "string"),
 		NestedRef: &schemaMyModelNestedRef{
-			X: storable.NewMap("inlinestruct.mapofsometype.[map].x", "int"),
-			Y: storable.NewMap("inlinestruct.mapofsometype.[map].y", "int"),
+			X: storable.NewField("nestedslice.x", "int"),
+			Y: storable.NewField("nestedslice.y", "int"),
 			Another: &schemaMyModelNestedRefAnother{
-				X: storable.NewMap("inlinestruct.mapofsometype.[map].another.x", "int"),
-				Y: storable.NewMap("inlinestruct.mapofsometype.[map].another.y", "int"),
+				X: storable.NewField("nestedslice.another.x", "int"),
+				Y: storable.NewField("nestedslice.another.y", "int"),
 			},
 		},
 		Nested: &schemaMyModelNested{
-			X:       storable.NewMap("inlinestruct.mapofsometype.[map].x", "int"),
-			Y:       storable.NewMap("inlinestruct.mapofsometype.[map].y", "int"),
+			X:       storable.NewField("nestedslice.x", "int"),
+			Y:       storable.NewField("nestedslice.y", "int"),
 			Another: nil,
 		},
 		NestedSlice: &schemaMyModelNestedSlice{
-			X:       storable.NewMap("inlinestruct.mapofsometype.[map].x", "int"),
-			Y:       storable.NewMap("inlinestruct.mapofsometype.[map].y", "int"),
+			X:       storable.NewField("nestedslice.x", "int"),
+			Y:       storable.NewField("nestedslice.y", "int"),
 			Another: nil,
 		},
 		AliasOfString: storable.NewField("aliasofstring", "string"),
@@ -313,8 +313,8 @@ var Schema = schema{
 		InlineStruct: &schemaMyModelInlineStruct{
 			MapOfString: storable.NewMap("inlinestruct.mapofstring.[map]", "string"),
 			MapOfSomeType: &schemaMyModelInlineStructMapOfSomeType{
-				X:       storable.NewMap("inlinestruct.mapofsometype.[map].x", "int"),
-				Y:       storable.NewMap("inlinestruct.mapofsometype.[map].y", "int"),
+				X:       storable.NewField("nestedslice.x", "int"),
+				Y:       storable.NewField("nestedslice.y", "int"),
 				Another: nil,
 			},
 		},
