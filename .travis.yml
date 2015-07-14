@@ -17,9 +17,4 @@ install:
   - go get -t -v ./...
   
 script:
-  - go test -v  -covermode=count -coverprofile=coverage.out ./...
-
-after_success:
-  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ttHfPtGawLnRyuGi8dxsddBDs1COrrI2o
-
-
+  - go test -v ./...
