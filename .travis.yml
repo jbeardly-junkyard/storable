@@ -14,7 +14,7 @@ before_install:
   - go get github.com/mattn/goveralls
   
 install:
-  - go get -t -v .
+  - go get -t -v ./...
   
 script:
   - go test -v -covermode=count -coverprofile=coverage.out
