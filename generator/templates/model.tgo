@@ -79,6 +79,17 @@ func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
     return nil
 }
 
+func (s *{{.StoreName}}) Save(doc *{{.Name}}) error {
+    {{$.CallHooks "before" "save" .}}
+    err := s.Store.Save(doc)
+    if err != nil {
+        return err
+    }
+    {{$.CallHooks "after" "save" .}}
+
+    return nil
+}
+
 {{template "query" .}}
 
 {{template "resultset" .}}
