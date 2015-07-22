@@ -257,7 +257,11 @@ type RecurQuery struct {
 }
 
 func (q *RecurQuery) FindById(ids ...bson.ObjectId) {
-	q.AddCriteria(operators.In(storable.IdField, ids))
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
 }
 
 type RecurResultSet struct {

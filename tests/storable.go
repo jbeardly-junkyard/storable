@@ -78,7 +78,11 @@ type AnotherModelQuery struct {
 }
 
 func (q *AnotherModelQuery) FindById(ids ...bson.ObjectId) {
-	q.AddCriteria(operators.In(storable.IdField, ids))
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
 }
 
 type AnotherModelResultSet struct {
@@ -185,7 +189,11 @@ type MyModelQuery struct {
 }
 
 func (q *MyModelQuery) FindById(ids ...bson.ObjectId) {
-	q.AddCriteria(operators.In(storable.IdField, ids))
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
 }
 
 type MyModelResultSet struct {
