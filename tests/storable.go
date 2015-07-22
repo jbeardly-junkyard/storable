@@ -77,11 +77,7 @@ type AnotherModelQuery struct {
 	storable.BaseQuery
 }
 
-func (q *AnotherModelQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria(operators.Eq(storable.IdField, id))
-}
-
-func (q *AnotherModelQuery) FindByIds(ids ...bson.ObjectId) {
+func (q *AnotherModelQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, ids))
 }
 
@@ -188,11 +184,7 @@ type MyModelQuery struct {
 	storable.BaseQuery
 }
 
-func (q *MyModelQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria(operators.Eq(storable.IdField, id))
-}
-
-func (q *MyModelQuery) FindByIds(ids ...bson.ObjectId) {
+func (q *MyModelQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, ids))
 }
 

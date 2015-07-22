@@ -256,11 +256,7 @@ type RecurQuery struct {
 	storable.BaseQuery
 }
 
-func (q *RecurQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria(operators.Eq(storable.IdField, id))
-}
-
-func (q *RecurQuery) FindByIds(ids ...bson.ObjectId) {
+func (q *RecurQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, ids))
 }
 

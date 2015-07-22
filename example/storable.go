@@ -122,11 +122,7 @@ type ProductQuery struct {
 	storable.BaseQuery
 }
 
-func (q *ProductQuery) FindById(id bson.ObjectId) {
-	q.AddCriteria(operators.Eq(storable.IdField, id))
-}
-
-func (q *ProductQuery) FindByIds(ids ...bson.ObjectId) {
+func (q *ProductQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, ids))
 }
 
