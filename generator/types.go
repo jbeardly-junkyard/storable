@@ -123,6 +123,11 @@ func (m *Model) NewArgs() string {
 
 	for i := 0; i < sig.Params().Len(); i++ {
 		param := sig.Params().At(i)
+
+		if isPtrToInvalid(param.Type()) {
+			continue
+		}
+
 		typeName := typeString(param.Type(), m.Package)
 		paramName := param.Name()
 		if paramName == "s" {
@@ -143,7 +148,14 @@ func (m *Model) NewArgVars() string {
 	sig := m.NewFunc.Type().(*types.Signature)
 
 	for i := 0; i < sig.Params().Len(); i++ {
-		paramName := sig.Params().At(i).Name()
+		param := sig.Params().At(i)
+
+		if isPtrToInvalid(param.Type()) {
+			ret = append(ret, "s")
+			continue
+		}
+
+		paramName := param.Name()
 		if paramName == "s" {
 			paramName = fmt.Sprintf("arg%v", i)
 		}
@@ -407,4 +419,9 @@ func typeString(ty types.Type, pkg *types.Package) string {
 		}
 	}
 	return prefix + parts[len(parts)-1]
+}
+
+func isPtrToInvalid(ty types.Type) bool {
+	ptrTo, ok := ty.(*types.Pointer)
+	return ok && ptrTo.Elem() == types.Typ[types.Invalid]
 }
