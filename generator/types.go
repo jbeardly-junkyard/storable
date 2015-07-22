@@ -124,7 +124,7 @@ func (m *Model) NewArgs() string {
 	for i := 0; i < sig.Params().Len(); i++ {
 		param := sig.Params().At(i)
 
-		if isPtrToInvalid(param.Type()) {
+		if m.isStore(param.Type()) {
 			continue
 		}
 
@@ -150,7 +150,7 @@ func (m *Model) NewArgVars() string {
 	for i := 0; i < sig.Params().Len(); i++ {
 		param := sig.Params().At(i)
 
-		if isPtrToInvalid(param.Type()) {
+		if m.isStore(param.Type()) {
 			ret = append(ret, "s")
 			continue
 		}
@@ -214,6 +214,18 @@ func (m *Model) NewRetVars() string {
 	}
 
 	return strings.Join(ret, ", ")
+}
+
+func (m *Model) isStore(typ types.Type) bool {
+	if isPtrToInvalid(typ) {
+		return true
+	}
+	if ptrTo, ok := typ.(*types.Pointer); ok {
+		if named, ok := ptrTo.Elem().(*types.Named); ok && named.Obj().Name() == m.StoreName {
+			return true
+		}
+	}
+	return false
 }
 
 type Function struct {
