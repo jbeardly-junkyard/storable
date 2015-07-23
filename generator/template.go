@@ -142,7 +142,7 @@ func (td *TemplateData) StructValue(vi interface{}, done map[interface{}]bool) s
 	return ret
 }
 
-func (td *TemplateData) CallHooks(whenStr, actionStr string, model *Model) string {
+func (td *TemplateData) CallHooks(whenStr, actionStr string, upsert bool, model *Model) string {
 	before := whenStr == "before"
 	actions := map[HookAction]bool{}
 	switch actionStr {
@@ -152,14 +152,17 @@ func (td *TemplateData) CallHooks(whenStr, actionStr string, model *Model) strin
 	case "update":
 		actions[UpdateHook] = true
 		actions[SaveHook] = true
+	case "save":
+		actions[SaveHook] = true
 	}
 
-	return callHooksGenerator{before, actions}.do(model, "")
+	return callHooksGenerator{before, actions, upsert}.do(model, "")
 }
 
 type callHooksGenerator struct {
 	before  bool
 	actions map[HookAction]bool
+	upsert  bool
 }
 
 type callHooksNode struct {
@@ -259,7 +262,11 @@ out:
 
 	for _, hook := range n.hooks {
 		if hook.Before == g.before && g.actions[hook.Action] {
-			ret += g.generateCall(varName(prefix), hook.MethodName())
+			ret += g.generateCall(
+				varName(prefix),
+				hook.MethodName(),
+				g.upsert,
+			)
 		}
 	}
 
@@ -274,31 +281,39 @@ out:
 	return ret
 }
 
-func (g callHooksGenerator) generateCall(sel string, method string) string {
+func (g callHooksGenerator) generateCall(sel string, method string, upsert bool) string {
+	updateVar := ""
+	if upsert {
+		updateVar = "updated, "
+	}
 	return fmt.Sprintf(
 		`if err := doc%s.%s(); err != nil {
-		return storable.HookError{
+		return %vstorable.HookError{
 			Hook: "%[2]s",
 			Field: "%[1]s",
 			Cause: err,
 		}
 	}
-	`, sel, method)
+	`, sel, method, updateVar)
 }
 
 func (g callHooksGenerator) generateStoreHooks(model *Model) string {
 	ret := ""
 	for _, hook := range model.StoreHooks {
 		if hook.Before == g.before && g.actions[hook.Action] {
+			updateVar := ""
+			if g.upsert && hook.Before == false {
+				updateVar = "updated, "
+			}
 			ret += fmt.Sprintf(
 				`if err := doc.%s(s); err != nil {
-			return storable.HookError{
+			return %vstorable.HookError{
 				Hook: "%[1]s",
 				Field: ".",
 				Cause: err,
 			}
 		}
-		`, hook.MethodName())
+		`, hook.MethodName(), updateVar)
 		}
 	}
 	return ret

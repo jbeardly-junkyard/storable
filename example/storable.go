@@ -118,6 +118,36 @@ func (s *ProductStore) Update(doc *Product) error {
 	return nil
 }
 
+func (s *ProductStore) Save(doc *Product) (updated bool, err error) {
+	if err := doc.BeforeSave(); err != nil {
+		return updated, storable.HookError{
+			Hook:  "BeforeSave",
+			Field: "",
+			Cause: err,
+		}
+	}
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	if updated {
+
+	} else {
+		if err := doc.Status.AfterInsert(); err != nil {
+			return updated, storable.HookError{
+				Hook:  "AfterInsert",
+				Field: ".Status",
+				Cause: err,
+			}
+		}
+
+	}
+
+	return
+}
+
 type ProductQuery struct {
 	storable.BaseQuery
 }

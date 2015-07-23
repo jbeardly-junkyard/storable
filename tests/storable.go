@@ -73,6 +73,22 @@ func (s *AnotherModelStore) Update(doc *AnotherModel) error {
 	return nil
 }
 
+func (s *AnotherModelStore) Save(doc *AnotherModel) (updated bool, err error) {
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	if updated {
+
+	} else {
+
+	}
+
+	return
+}
+
 type AnotherModelQuery struct {
 	storable.BaseQuery
 }
@@ -182,6 +198,22 @@ func (s *MyModelStore) Update(doc *MyModel) error {
 	}
 
 	return nil
+}
+
+func (s *MyModelStore) Save(doc *MyModel) (updated bool, err error) {
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	if updated {
+
+	} else {
+
+	}
+
+	return
 }
 
 type MyModelQuery struct {

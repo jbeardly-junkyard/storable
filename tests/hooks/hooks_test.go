@@ -13,6 +13,7 @@ import (
 	"golang.org/x/tools/go/types"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/tyba/storable"
 	"github.com/tyba/storable/generator"
@@ -153,6 +154,44 @@ func (s *HooksSuite) TestGenerateHooks(c *C) {
 	c.Assert(hooks.Log[4:], DeepEquals, []string{
 		"Called BeforeUpdate(s) on *Recur with Foo Bar",
 		"Called AfterUpdate on Other with Name MyOther",
+		"Called AfterSave on *Other with Name MyOther",
+	})
+	c.Assert(err, IsNil)
+
+	hooks.Log = nil
+
+	updated, err := store.Save(doc)
+	c.Assert(updated, Equals, true)
+	c.Assert(hooks.Log[:1], DeepEquals, []string{
+		"Called BeforeSave on *Recur with Foo Bar",
+	})
+	c.Assert(s.sortedStrs(hooks.Log[1:4]), DeepEquals, s.sortedStrs([]string{
+		"Called BeforeSave on Thing 123",
+		"Called BeforeSave on Thing 456",
+		"Called BeforeSave on Thing 789",
+	}))
+	c.Assert(hooks.Log[4:], DeepEquals, []string{
+		"Called AfterUpdate on Other with Name MyOther",
+		"Called AfterSave on *Other with Name MyOther",
+	})
+	c.Assert(err, IsNil)
+
+	hooks.Log = nil
+
+	doc.Id = bson.NewObjectId()
+	doc.SetIsNew(true)
+	updated, err = store.Save(doc)
+	c.Assert(updated, Equals, false)
+	c.Assert(hooks.Log[:1], DeepEquals, []string{
+		"Called BeforeSave on *Recur with Foo Bar",
+	})
+	c.Assert(s.sortedStrs(hooks.Log[1:4]), DeepEquals, s.sortedStrs([]string{
+		"Called BeforeSave on Thing 123",
+		"Called BeforeSave on Thing 456",
+		"Called BeforeSave on Thing 789",
+	}))
+	c.Assert(hooks.Log[4:], DeepEquals, []string{
+		"Called AfterInsert on Other with Name MyOther",
 		"Called AfterSave on *Other with Name MyOther",
 	})
 	c.Assert(err, IsNil)

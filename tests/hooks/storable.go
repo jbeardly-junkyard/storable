@@ -252,6 +252,125 @@ func (s *RecurStore) Update(doc *Recur) error {
 	return nil
 }
 
+func (s *RecurStore) Save(doc *Recur) (updated bool, err error) {
+	if err := doc.BeforeSave(); err != nil {
+		return updated, storable.HookError{
+			Hook:  "BeforeSave",
+			Field: "",
+			Cause: err,
+		}
+	}
+	if doc.R != nil {
+		// Loop: .R.R2.R2 *..Recur
+
+	}
+	for k0, _ := range doc.MoreThings {
+		if err := doc.MoreThings[k0].BeforeSave(); err != nil {
+			return updated, storable.HookError{
+				Hook:  "BeforeSave",
+				Field: ".MoreThings[k0]",
+				Cause: err,
+			}
+		}
+
+	}
+	if doc.MyFailer != nil {
+		if err := doc.MyFailer.BeforeSave(); err != nil {
+			return updated, storable.HookError{
+				Hook:  "BeforeSave",
+				Field: ".MyFailer",
+				Cause: err,
+			}
+		}
+
+	}
+	for k0, _ := range doc.Things {
+		for k1, _ := range doc.Things[k0] {
+			if doc.Things[k0][k1] != nil {
+				if err := doc.Things[k0][k1].BeforeSave(); err != nil {
+					return updated, storable.HookError{
+						Hook:  "BeforeSave",
+						Field: ".Things[k0][k1]",
+						Cause: err,
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	if updated {
+		if doc.R != nil {
+			if err := doc.R.AfterUpdate(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterUpdate",
+					Field: ".R",
+					Cause: err,
+				}
+			}
+			if err := doc.R.AfterSave(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterSave",
+					Field: ".R",
+					Cause: err,
+				}
+			}
+			// Loop: .R.R2.R2 *..Recur
+
+		}
+		if doc.MyAfterFailer != nil {
+			if err := doc.MyAfterFailer.AfterSave(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterSave",
+					Field: ".MyAfterFailer",
+					Cause: err,
+				}
+			}
+
+		}
+
+	} else {
+		if doc.R != nil {
+			if err := doc.R.AfterInsert(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterInsert",
+					Field: ".R",
+					Cause: err,
+				}
+			}
+			if err := doc.R.AfterSave(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterSave",
+					Field: ".R",
+					Cause: err,
+				}
+			}
+			// Loop: .R.R2.R2 *..Recur
+
+		}
+		if doc.MyAfterFailer != nil {
+			if err := doc.MyAfterFailer.AfterSave(); err != nil {
+				return updated, storable.HookError{
+					Hook:  "AfterSave",
+					Field: ".MyAfterFailer",
+					Cause: err,
+				}
+			}
+
+		}
+
+	}
+
+	return
+}
+
 type RecurQuery struct {
 	storable.BaseQuery
 }

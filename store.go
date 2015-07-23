@@ -64,21 +64,22 @@ func (s *Store) Update(doc DocumentBase) error {
 
 // Save insert or update the given document in the collection, a document with
 // id should be provided. Upsert is used (http://godoc.org/gopkg.in/mgo.v2#Collection.Upsert)
-func (s *Store) Save(doc DocumentBase) error {
+func (s *Store) Save(doc DocumentBase) (inserted bool, err error) {
 	id := doc.GetId()
 	if len(id) == 0 {
-		return EmptyIdErr
+		return false, EmptyIdErr
 	}
 
 	sess, c := s.getSessionAndCollection()
 	defer sess.Close()
 
-	_, err := c.UpsertId(id, doc)
-	if err == nil {
-		doc.SetIsNew(false)
+	inf, err := c.UpsertId(id, doc)
+	if err != nil {
+		return false, err
 	}
 
-	return err
+	doc.SetIsNew(false)
+	return inf.Updated > 0, nil
 }
 
 // Delete remove the document from the collection
