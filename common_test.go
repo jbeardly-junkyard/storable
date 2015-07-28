@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	testMongoHost = "localhost"
+	testMongoHost = "127.0.0.1:27017"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -21,7 +21,10 @@ type BaseSuite struct {
 var _ = Suite(&BaseSuite{})
 
 func (s *BaseSuite) SetUpTest(c *C) {
-	conn, _ := mgo.Dial(testMongoHost)
+	conn, err := mgo.Dial(testMongoHost)
+	if err != nil {
+		panic(err)
+	}
 	s.db = conn.DB(uuid.New())
 }
 

@@ -64,7 +64,7 @@ func (s *Store) Update(doc DocumentBase) error {
 
 // Save insert or update the given document in the collection, a document with
 // id should be provided. Upsert is used (http://godoc.org/gopkg.in/mgo.v2#Collection.Upsert)
-func (s *Store) Save(doc DocumentBase) (inserted bool, err error) {
+func (s *Store) Save(doc DocumentBase) (updated bool, err error) {
 	id := doc.GetId()
 	if len(id) == 0 {
 		return false, EmptyIdErr

@@ -59,13 +59,15 @@ func (s *BaseSuite) TestStore_Save(c *C) {
 	p.SetId(bson.NewObjectId())
 
 	st := NewStore(s.db, "test")
-	err := st.Save(p)
+	updated, err := st.Save(p)
 	c.Assert(err, IsNil)
+	c.Assert(updated, Equals, false)
 	c.Assert(p.IsNew(), Equals, false)
 
 	p.FirstName = "qux"
-	err = st.Save(p)
+	updated, err = st.Save(p)
 	c.Assert(err, IsNil)
+	c.Assert(updated, Equals, true)
 	c.Assert(p.IsNew(), Equals, false)
 
 	r, err := st.Find(NewBaseQuery())
