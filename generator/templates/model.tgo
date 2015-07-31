@@ -38,7 +38,6 @@ func (s *{{.StoreName}}) MustFind(query *{{.QueryName}}) *{{.ResultSetName}} {
     return resultSet
 }
 
-
 func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     resultSet, err := s.Find(query)
     if err != nil {
@@ -90,7 +89,7 @@ func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
     if updated {
         {{$.CallHooks "after" "update" true .}}
     } else {
-        {{$.CallHooks "after" "insert" true .}}    
+        {{$.CallHooks "after" "insert" true .}}
     }
 
     return

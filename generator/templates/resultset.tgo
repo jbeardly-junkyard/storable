@@ -12,7 +12,7 @@ func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
 
 func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
     var result *{{.Name}}
-    _, err := r.ResultSet.One(&result)
+    err := r.ResultSet.One(&result)
 
     return result, err
 }

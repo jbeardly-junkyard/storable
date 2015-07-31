@@ -41,10 +41,22 @@ func (s *BaseSuite) TestResultSet_One(c *C) {
 	c.Assert(err, IsNil)
 
 	var result *Person
-	f, err := r.One(&result)
-
+	err = r.One(&result)
 	c.Assert(err, IsNil)
-	c.Assert(f, Equals, true)
+
+	c.Assert(result.Id.Valid(), Equals, true)
+	c.Assert(r.IsClosed, Equals, true)
+}
+
+func (s *BaseSuite) TestResultSet_OneNotFound(c *C) {
+	st := NewStore(s.db, "test")
+	r, err := st.Find(NewBaseQuery())
+	c.Assert(err, IsNil)
+
+	var result *Person
+	err = r.One(&result)
+	c.Assert(err, Equals, ErrNotFound)
+	c.Assert(result, IsNil)
 	c.Assert(r.IsClosed, Equals, true)
 }
 
@@ -68,5 +80,5 @@ func (s *BaseSuite) TestResultSet_Close(c *C) {
 	r, _ := st.Find(NewBaseQuery())
 
 	c.Assert(r.Close(), IsNil)
-	c.Assert(r.Close(), Equals, ResultSetClosed)
+	c.Assert(r.Close(), Equals, ErrResultSetClosed)
 }
