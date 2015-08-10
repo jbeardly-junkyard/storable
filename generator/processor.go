@@ -20,8 +20,7 @@ type Processor struct {
 	Path   string
 	Ignore map[string]bool
 
-	TypesPkg     *types.Package
-	fieldsForStr map[*types.Struct]*[]*Field
+	TypesPkg *types.Package
 }
 
 func NewProcessor(path string, ignore []string) *Processor {
@@ -31,9 +30,8 @@ func NewProcessor(path string, ignore []string) *Processor {
 	}
 
 	return &Processor{
-		Path:         path,
-		Ignore:       i,
-		fieldsForStr: map[*types.Struct]*[]*Field{},
+		Path:   path,
+		Ignore: i,
 	}
 }
 
@@ -191,33 +189,16 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 }
 
 func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
-	base = p.processFields(s)
-
-	for _, fields := range p.fieldsForStr {
-		for _, f := range *fields {
-			if f.CheckedNode == nil || len(f.Fields) > 0 {
-				continue
-			}
-			if v := p.fieldsForStr[p.tryGetStruct(f.CheckedNode.Type())]; v != nil {
-				f.SetFields(*v)
-			}
-		}
-	}
-
-	fields = *p.fieldsForStr[s]
-
+	base, fields = p.processFields(s, []*types.Struct{})
 	return
 }
 
 // Returns which field index is an embedded storable.Document, or -1 if none.
-func (p *Processor) processFields(s *types.Struct) int {
+func (p *Processor) processFields(s *types.Struct, done []*types.Struct) (base int, fields []*Field) {
 	c := s.NumFields()
 
-	base := -1
-	fields := make([]*Field, 0)
-	if _, ok := p.fieldsForStr[s]; !ok {
-		p.fieldsForStr[s] = &fields
-	}
+	base = -1
+	fields = make([]*Field, 0)
 
 	for i := 0; i < c; i++ {
 		f := s.Field(i)
@@ -235,16 +216,24 @@ func (p *Processor) processFields(s *types.Struct) int {
 		str := p.tryGetStruct(f.Type())
 		if f.Type().String() != BaseDocument && str != nil {
 			field.Type = getStructType(f.Type())
-			_, ok := p.fieldsForStr[str]
-			if !ok {
-				p.processFields(str)
+
+			d := false
+			for _, v := range done {
+				if v == str {
+					d = true
+					break
+				}
+			}
+			if !d {
+				_, subfs := p.processFields(str, append(done, str))
+				field.SetFields(subfs)
 			}
 		}
 
 		fields = append(fields, field)
 	}
 
-	return base
+	return base, fields
 }
 
 func getStructType(t types.Type) string {
@@ -273,20 +262,20 @@ func (p *Processor) findHooks(m *Model) {
 	modelType := types.NewPointer(p.TypesPkg.Scope().Lookup(m.Name).Type())
 	m.Hooks = p.hookMethods(modelType, nil)
 
-	done := map[interface{}]bool{modelType: true}
 	for _, f := range m.Fields {
-		p.findFieldHooks(f, done)
+		p.findFieldHooks(f, []interface{}{modelType})
 	}
 }
 
-func (p *Processor) findFieldHooks(f *Field, done map[interface{}]bool) {
-	if done[f.CheckedNode.Type()] {
-		return
-	}
-	done[f.CheckedNode.Type()] = true
-
+func (p *Processor) findFieldHooks(f *Field, done []interface{}) {
 	if f.CheckedNode == nil {
 		return
+	}
+
+	for _, v := range done {
+		if v == f.CheckedNode.Type() {
+			return
+		}
 	}
 
 	typ := f.CheckedNode.Type()
@@ -309,7 +298,7 @@ out:
 	f.Hooks = p.hookMethods(typ, nil)
 
 	for _, f := range f.Fields {
-		p.findFieldHooks(f, done)
+		p.findFieldHooks(f, append(done, f.CheckedNode.Type()))
 	}
 }
 

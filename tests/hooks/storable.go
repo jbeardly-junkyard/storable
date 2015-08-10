@@ -427,7 +427,7 @@ type schemaRecurR struct {
 }
 
 type schemaRecurMoreThings struct {
-	I storable.Map
+	I storable.Field
 }
 
 type schemaRecurMyFailer struct {
@@ -442,34 +442,55 @@ type schemaRecurThings struct {
 
 type schemaRecurRR2 struct {
 	Foo           storable.Field
-	R             *schemaRecurR
-	MoreThings    *schemaRecurMoreThings
-	MyFailer      *schemaRecurMyFailer
-	MyAfterFailer *schemaRecurMyAfterFailer
-	Things        *schemaRecurThings
+	R             *schemaRecurRR2R
+	MoreThings    *schemaRecurRR2MoreThings
+	MyFailer      *schemaRecurRR2MyFailer
+	MyAfterFailer *schemaRecurRR2MyAfterFailer
+	Things        *schemaRecurRR2Things
+}
+
+type schemaRecurRR2R struct {
+}
+
+type schemaRecurRR2MoreThings struct {
+	I storable.Field
+}
+
+type schemaRecurRR2MyFailer struct {
+}
+
+type schemaRecurRR2MyAfterFailer struct {
+}
+
+type schemaRecurRR2Things struct {
+	I storable.Map
 }
 
 var Schema = schema{
 	Recur: &schemaRecur{
-		Foo: storable.NewField("-.r2.foo", "string"),
+		Foo: storable.NewField("foo", "string"),
 		R: &schemaRecurR{
-			Name: storable.NewField("r2.-.name", "string"),
+			Name: storable.NewField("-.name", "string"),
 			R2: &schemaRecurRR2{
 				Foo: storable.NewField("-.r2.foo", "string"),
-				R:   nil,
-				MoreThings: &schemaRecurMoreThings{
-					I: storable.NewMap("-.r2.things.[map].i", "int"),
+				R:   &schemaRecurRR2R{},
+				MoreThings: &schemaRecurRR2MoreThings{
+					I: storable.NewField("-.r2.morethings.i", "int"),
 				},
-				MyFailer:      &schemaRecurMyFailer{},
-				MyAfterFailer: &schemaRecurMyAfterFailer{},
-				Things: &schemaRecurThings{
+				MyFailer:      &schemaRecurRR2MyFailer{},
+				MyAfterFailer: &schemaRecurRR2MyAfterFailer{},
+				Things: &schemaRecurRR2Things{
 					I: storable.NewMap("-.r2.things.[map].i", "int"),
 				},
 			},
 		},
-		MoreThings:    nil,
-		MyFailer:      nil,
-		MyAfterFailer: nil,
-		Things:        nil,
+		MoreThings: &schemaRecurMoreThings{
+			I: storable.NewField("morethings.i", "int"),
+		},
+		MyFailer:      &schemaRecurMyFailer{},
+		MyAfterFailer: &schemaRecurMyAfterFailer{},
+		Things: &schemaRecurThings{
+			I: storable.NewMap("things.[map].i", "int"),
+		},
 	},
 }

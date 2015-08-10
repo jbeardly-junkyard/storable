@@ -41,7 +41,8 @@ func (s *ProcessorSuite) TestRecursiveStruct(c *C) {
 	genPkg, err := prc.ProcessTypesPkg()
 
 	c.Assert(err, IsNil)
-	c.Assert(genPkg.Models[0].Fields[2].Fields[2], Equals, genPkg.Models[0].Fields[2], Commentf("direct type recursivity not handled correctly."))
+	c.Assert(genPkg.Models[0].Fields[2].Fields[2].CheckedNode, Equals, genPkg.Models[0].Fields[2].CheckedNode, Commentf("direct type recursivity not handled correctly."))
+	c.Assert(len(genPkg.Models[0].Fields[2].Fields[2].Fields), Equals, 0)
 }
 
 func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
@@ -71,5 +72,6 @@ func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
 	genPkg, err := prc.ProcessTypesPkg()
 
 	c.Assert(err, IsNil)
-	c.Assert(genPkg.Models[0].Fields[2].Fields[0].Fields[2], Equals, genPkg.Models[0].Fields[2], Commentf("direct type recursivity not handled correctly."))
+	c.Assert(genPkg.Models[0].Fields[2].Fields[0].Fields[2].CheckedNode, Equals, genPkg.Models[0].Fields[2].CheckedNode, Commentf("direct type recursivity not handled correctly."))
+	c.Assert(len(genPkg.Models[0].Fields[2].Fields[0].Fields[2].Fields), Equals, 0)
 }
