@@ -302,7 +302,7 @@ func (g callHooksGenerator) generateStoreHooks(model *Model) string {
 	for _, hook := range model.StoreHooks {
 		if hook.Before == g.before && g.actions[hook.Action] {
 			updateVar := ""
-			if g.upsert && hook.Before == false {
+			if g.upsert {
 				updateVar = "updated, "
 			}
 			ret += fmt.Sprintf(
