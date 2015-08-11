@@ -13,6 +13,7 @@ func New{{.StoreName}}(db *mgo.Database) *{{.StoreName}} {
 func (s *{{.StoreName}}) New({{.NewArgs}}) {{.NewReturns}} {
 	{{.NewRetVars}} = {{if .NewFunc}}{{.NewFunc.Name}}({{.NewArgVars}}){{else}}&{{.Name}}{}{{end}}
     doc.SetIsNew(true)
+    doc.SetId(bson.NewObjectId())
     return
 }
 
@@ -90,7 +91,7 @@ func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
     if updated {
         {{$.CallHooks "after" "update" true .}}
     } else {
-        {{$.CallHooks "after" "insert" true .}}    
+        {{$.CallHooks "after" "insert" true .}}
     }
 
     return
