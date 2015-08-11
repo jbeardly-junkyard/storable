@@ -20,6 +20,7 @@ func NewProductStore(db *mgo.Database) *ProductStore {
 func (s *ProductStore) New(name string, price Price, createdAt time.Time) (doc *Product, err error) {
 	doc, err = newProduct(name, price, createdAt)
 	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
 	return
 }
 

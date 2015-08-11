@@ -18,6 +18,7 @@ func NewRecurStore(db *mgo.Database) *RecurStore {
 func (s *RecurStore) New() (doc *Recur) {
 	doc = &Recur{}
 	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
 	return
 }
 

@@ -10,6 +10,7 @@ import (
 func (s *AnotherModelStore) New() (doc *AnotherModel) {
 	doc = &AnotherModel{}
 	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
 	return
 }
 
@@ -137,6 +138,7 @@ func NewMyModelStore(db *mgo.Database) *MyModelStore {
 func (s *MyModelStore) New() (doc *MyModel) {
 	doc = &MyModel{}
 	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
 	return
 }
 
