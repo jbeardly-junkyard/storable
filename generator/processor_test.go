@@ -1,15 +1,14 @@
-package generator_test
+package generator
 
 import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"reflect"
 	"testing"
 
 	"golang.org/x/tools/go/types"
 	. "gopkg.in/check.v1"
-
-	"github.com/tyba/storable/generator"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -17,6 +16,22 @@ func Test(t *testing.T) { TestingT(t) }
 type ProcessorSuite struct{}
 
 var _ = Suite(&ProcessorSuite{})
+
+func (s *ProcessorSuite) TestTags(c *C) {
+	fixtureSrc := `
+	package fixture
+
+	import 	"github.com/tyba/storable"
+
+	type Foo struct {
+		storable.Document
+		Int int "foo"
+	}
+	`
+
+	pkg := s.processFixture(fixtureSrc)
+	c.Assert(pkg.Models[0].Fields[1].Tag, Equals, reflect.StructTag("foo"))
+}
 
 func (s *ProcessorSuite) TestRecursiveStruct(c *C) {
 	fixtureSrc := `
@@ -31,18 +46,16 @@ func (s *ProcessorSuite) TestRecursiveStruct(c *C) {
 	}
 	`
 
-	fset := &token.FileSet{}
-	astFile, _ := parser.ParseFile(fset, "fixture.go", fixtureSrc, 0)
-	cfg := &types.Config{}
-	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{astFile}, nil)
+	pkg := s.processFixture(fixtureSrc)
 
-	prc := generator.NewProcessor("fixture", nil)
-	prc.TypesPkg = p
-	genPkg, err := prc.ProcessTypesPkg()
+	c.Assert(
+		pkg.Models[0].Fields[2].Fields[2].CheckedNode,
+		Equals,
+		pkg.Models[0].Fields[2].CheckedNode,
+		Commentf("direct type recursivity not handled correctly."),
+	)
 
-	c.Assert(err, IsNil)
-	c.Assert(genPkg.Models[0].Fields[2].Fields[2].CheckedNode, Equals, genPkg.Models[0].Fields[2].CheckedNode, Commentf("direct type recursivity not handled correctly."))
-	c.Assert(len(genPkg.Models[0].Fields[2].Fields[2].Fields), Equals, 0)
+	c.Assert(len(pkg.Models[0].Fields[2].Fields[2].Fields), Equals, 0)
 }
 
 func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
@@ -62,16 +75,31 @@ func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
 	}
 	`
 
+	pkg := s.processFixture(fixtureSrc)
+
+	c.Assert(pkg.Models[0].Fields[2].Fields[0].Fields[2].CheckedNode, Equals, pkg.Models[0].Fields[2].CheckedNode, Commentf("direct type recursivity not handled correctly."))
+	c.Assert(len(pkg.Models[0].Fields[2].Fields[0].Fields[2].Fields), Equals, 0)
+}
+
+func (s *ProcessorSuite) processFixture(source string) *Package {
 	fset := &token.FileSet{}
-	astFile, _ := parser.ParseFile(fset, "fixture.go", fixtureSrc, 0)
+	astFile, err := parser.ParseFile(fset, "fixture.go", source, 0)
+	if err != nil {
+		panic(err)
+	}
+
 	cfg := &types.Config{}
-	p, _ := cfg.Check("github.com/tcard/navpatch/navpatch", fset, []*ast.File{astFile}, nil)
+	p, _ := cfg.Check("foo", fset, []*ast.File{astFile}, nil)
+	if err != nil {
+		panic(err)
+	}
 
-	prc := generator.NewProcessor("fixture", nil)
+	prc := NewProcessor("fixture", nil)
 	prc.TypesPkg = p
-	genPkg, err := prc.ProcessTypesPkg()
+	pkg, err := prc.ProcessTypesPkg()
+	if err != nil {
+		panic(err)
+	}
 
-	c.Assert(err, IsNil)
-	c.Assert(genPkg.Models[0].Fields[2].Fields[0].Fields[2].CheckedNode, Equals, genPkg.Models[0].Fields[2].CheckedNode, Commentf("direct type recursivity not handled correctly."))
-	c.Assert(len(genPkg.Models[0].Fields[2].Fields[0].Fields[2].Fields), Equals, 0)
+	return pkg
 }
