@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testMongoHost = "localhost"
+	testMongoHost = "127.0.0.1:27017"
 	testDatabase  = "storable-test"
 )
 
@@ -73,6 +73,9 @@ func (s *MongoSuite) TestSchema(c *C) {
 
 	key = Schema.MyModel.InlineStruct.MapOfSomeType.X.Key("foo").String()
 	c.Assert(key, Equals, "inlinestruct.mapofsometype.foo.x")
+
+	key = Schema.MyModel.InlineStruct.MapOfInterface.Key("foo").String()
+	c.Assert(key, Equals, "inlinestruct.mapofinterface.foo")
 }
 
 func (s *MongoSuite) TearDownTest(c *C) {

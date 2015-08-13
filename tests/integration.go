@@ -27,8 +27,9 @@ type MyModel struct {
 	Time          time.Time
 	MapsOfString  map[string]string
 	InlineStruct  struct {
-		MapOfString   map[string]string
-		MapOfSomeType map[string]SomeType
+		MapOfString    map[string]string
+		MapOfSomeType  map[string]SomeType
+		MapOfInterface map[string]interface{}
 	}
 }
 

@@ -298,8 +298,9 @@ type schemaMyModelNestedSlice struct {
 }
 
 type schemaMyModelInlineStruct struct {
-	MapOfString   storable.Map
-	MapOfSomeType *schemaMyModelInlineStructMapOfSomeType
+	MapOfString    storable.Map
+	MapOfSomeType  *schemaMyModelInlineStructMapOfSomeType
+	MapOfInterface storable.Map
 }
 
 type schemaMyModelNestedRefAnother struct {
@@ -375,6 +376,7 @@ var Schema = schema{
 					Y: storable.NewMap("inlinestruct.mapofsometype.[map].another.y", "int"),
 				},
 			},
+			MapOfInterface: storable.NewMap("inlinestruct.mapofinterface.[map]", "interface{}"),
 		},
 	},
 }
