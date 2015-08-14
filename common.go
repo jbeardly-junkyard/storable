@@ -3,6 +3,8 @@ package storable
 import (
 	"fmt"
 	"strings"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Field struct {
@@ -83,6 +85,34 @@ func (s Sort) String() string {
 
 // IsEmpty returns if this sort map is empty or not
 func (s Sort) IsEmpty() bool {
+	return len(s) == 0
+}
+
+type Filter int
+
+const (
+	Include Filter = 1
+	Exclude Filter = 0
+)
+
+type Select []FieldSelect
+
+type FieldSelect struct {
+	F Field
+	D Filter
+}
+
+func (s Select) ToMap() bson.M {
+	m := bson.M{}
+	for _, fs := range s {
+		m[fs.F.String()] = int(fs.D)
+	}
+
+	return m
+}
+
+// IsEmpty returns if this select is empty or not
+func (s Select) IsEmpty() bool {
 	return len(s) == 0
 }
 

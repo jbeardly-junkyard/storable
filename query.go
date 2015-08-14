@@ -13,15 +13,18 @@ type Query interface {
 	Sort(s Sort)
 	Limit(l int)
 	Skip(s int)
+	Select(p Select)
 	GetSort() Sort
 	GetLimit() int
 	GetSkip() int
+	GetSelect() Select
 }
 
 type BaseQuery struct {
 	clauses     []bson.M
 	limit, skip int
 	sort        Sort
+	selector    Select
 }
 
 func NewBaseQuery() *BaseQuery {
@@ -68,19 +71,30 @@ func (q *BaseQuery) Skip(s int) {
 	q.skip = s
 }
 
+// Select specifies the fields to return using projection operators.
+// http://docs.mongodb.org/manual/reference/operator/projection/
+func (q *BaseQuery) Select(projection Select) {
+	q.selector = projection
+}
+
 // GetSort return the current sorting preferences of the query.
 func (q *BaseQuery) GetSort() Sort {
 	return q.sort
 }
 
-// GetSort return the current limit preferences of the query.
+// GetLimit return the current limit preferences of the query.
 func (q *BaseQuery) GetLimit() int {
 	return q.limit
 }
 
-// GetSort return the current skip preferences of the query.
+// GetSkip return the current skip preferences of the query.
 func (q *BaseQuery) GetSkip() int {
 	return q.skip
+}
+
+// GetSelect return the current select preferences of the query.
+func (q *BaseQuery) GetSelect() Select {
+	return q.selector
 }
 
 // Strings return a json representation of the criteria. Sorry but this is not

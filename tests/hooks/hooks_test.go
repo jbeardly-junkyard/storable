@@ -67,7 +67,7 @@ func (s *HooksSuite) TestFindHooks(c *C) {
 }
 
 func (s *HooksSuite) TestGenerateHooks(c *C) {
-	conn, _ := mgo.Dial("localhost")
+	conn, _ := mgo.Dial("127.0.0.1:27017")
 	db := conn.DB("storable-test")
 	defer db.DropDatabase()
 

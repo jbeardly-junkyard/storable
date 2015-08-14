@@ -107,6 +107,10 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 		mq.Limit(q.GetLimit())
 	}
 
+	if !q.GetSelect().IsEmpty() {
+		mq.Select(q.GetSelect().ToMap())
+	}
+
 	return &ResultSet{session: sess, mgoQuery: mq}, nil
 }
 

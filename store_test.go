@@ -152,6 +152,26 @@ func (s *BaseSuite) TestStore_FindSort(c *C) {
 	c.Assert(result[1].FirstName, Equals, "foo")
 }
 
+func (s *BaseSuite) TestStore_FindSelect(c *C) {
+	p := NewPerson("foo")
+	p.LastName = "qux"
+
+	st := NewStore(s.db, "test")
+	st.Insert(p)
+
+	q := NewBaseQuery()
+	q.Select(Select{{NewField("lastname", "string"), Exclude}})
+
+	r, err := st.Find(q)
+	c.Assert(err, IsNil)
+
+	var result []*Person
+	c.Assert(r.All(&result), IsNil)
+	c.Assert(result, HasLen, 1)
+	c.Assert(result[0].FirstName, Equals, "foo")
+	c.Assert(result[0].LastName, Equals, "")
+}
+
 func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	st := NewStore(s.db, "test")
 

@@ -6,6 +6,7 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -45,6 +46,22 @@ func (s *BaseSuite) TestSort_IsEmpty(c *C) {
 
 	sort = Sort{}
 	c.Assert(sort.IsEmpty(), Equals, true)
+}
+
+func (s *BaseSuite) TestSelect_ToMap(c *C) {
+	sel := Select{{Field{"foo", ""}, Exclude}}
+	c.Assert(sel.ToMap(), DeepEquals, bson.M{"foo": 0})
+
+	sel = Select{{Field{"foo", ""}, Include}}
+	c.Assert(sel.ToMap(), DeepEquals, bson.M{"foo": 1})
+}
+
+func (s *BaseSuite) TestSelect_IsEmpty(c *C) {
+	sel := Select{{Field{"foo", ""}, Include}}
+	c.Assert(sel.IsEmpty(), Equals, false)
+
+	sel = Select{}
+	c.Assert(sel.IsEmpty(), Equals, true)
 }
 
 func (s *BaseSuite) TearDownTest(c *C) {
