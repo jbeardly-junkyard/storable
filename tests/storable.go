@@ -1,4 +1,4 @@
-package example
+package tests
 
 import (
 	"github.com/tyba/storable"
@@ -7,148 +7,35 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func (s *AnotherModelStore) New() (doc *AnotherModel) {
-	doc = &AnotherModel{}
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
-	return
-}
-
-func (s *AnotherModelStore) Query() *AnotherModelQuery {
-	return &AnotherModelQuery{*storable.NewBaseQuery()}
-}
-
-func (s *AnotherModelStore) Find(query *AnotherModelQuery) (*AnotherModelResultSet, error) {
-	resultSet, err := s.Store.Find(query)
-	if err != nil {
-		return nil, err
-	}
-
-	return &AnotherModelResultSet{*resultSet}, nil
-}
-
-func (s *AnotherModelStore) MustFind(query *AnotherModelQuery) *AnotherModelResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
-}
-
-func (s *AnotherModelStore) FindOne(query *AnotherModelQuery) (*AnotherModel, error) {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		return nil, err
-	}
-
-	return resultSet.One()
-}
-
-func (s *AnotherModelStore) MustFindOne(query *AnotherModelQuery) *AnotherModel {
-	doc, err := s.FindOne(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return doc
-}
-
-func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
-
-	err := s.Store.Insert(doc)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *AnotherModelStore) Update(doc *AnotherModel) error {
-
-	err := s.Store.Update(doc)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *AnotherModelStore) Save(doc *AnotherModel) (updated bool, err error) {
-	updated, err = s.Store.Save(doc)
-	if err != nil {
-		return false, err
-	}
-
-	return
-}
-
-type AnotherModelQuery struct {
-	storable.BaseQuery
-}
-
-func (q *AnotherModelQuery) FindById(ids ...bson.ObjectId) {
-	var vs []interface{}
-	for _, id := range ids {
-		vs = append(vs, id)
-	}
-	q.AddCriteria(operators.In(storable.IdField, vs...))
-}
-
-type AnotherModelResultSet struct {
-	storable.ResultSet
-}
-
-func (r *AnotherModelResultSet) All() ([]*AnotherModel, error) {
-	var result []*AnotherModel
-	err := r.ResultSet.All(&result)
-
-	return result, err
-}
-
-func (r *AnotherModelResultSet) One() (*AnotherModel, error) {
-	var result *AnotherModel
-	err := r.ResultSet.One(&result)
-
-	return result, err
-}
-
-func (r *AnotherModelResultSet) Next() (*AnotherModel, error) {
-	var result *AnotherModel
-	_, err := r.ResultSet.Next(&result)
-
-	return result, err
-}
-
-type EventsTestsStore struct {
+type EventsFixtureStore struct {
 	storable.Store
 }
 
-func NewEventsTestsStore(db *mgo.Database) *EventsTestsStore {
-	return &EventsTestsStore{*storable.NewStore(db, "event")}
+func NewEventsFixtureStore(db *mgo.Database) *EventsFixtureStore {
+	return &EventsFixtureStore{*storable.NewStore(db, "event")}
 }
 
-func (s *EventsTestsStore) New() (doc *EventsTests) {
-	doc = newEventsTests()
+func (s *EventsFixtureStore) New() (doc *EventsFixture) {
+	doc = newEventsFixture()
 	doc.SetIsNew(true)
 	doc.SetId(bson.NewObjectId())
 	return
 }
 
-func (s *EventsTestsStore) Query() *EventsTestsQuery {
-	return &EventsTestsQuery{*storable.NewBaseQuery()}
+func (s *EventsFixtureStore) Query() *EventsFixtureQuery {
+	return &EventsFixtureQuery{*storable.NewBaseQuery()}
 }
 
-func (s *EventsTestsStore) Find(query *EventsTestsQuery) (*EventsTestsResultSet, error) {
+func (s *EventsFixtureStore) Find(query *EventsFixtureQuery) (*EventsFixtureResultSet, error) {
 	resultSet, err := s.Store.Find(query)
 	if err != nil {
 		return nil, err
 	}
 
-	return &EventsTestsResultSet{*resultSet}, nil
+	return &EventsFixtureResultSet{*resultSet}, nil
 }
 
-func (s *EventsTestsStore) MustFind(query *EventsTestsQuery) *EventsTestsResultSet {
+func (s *EventsFixtureStore) MustFind(query *EventsFixtureQuery) *EventsFixtureResultSet {
 	resultSet, err := s.Find(query)
 	if err != nil {
 		panic(err)
@@ -157,7 +44,7 @@ func (s *EventsTestsStore) MustFind(query *EventsTestsQuery) *EventsTestsResultS
 	return resultSet
 }
 
-func (s *EventsTestsStore) FindOne(query *EventsTestsQuery) (*EventsTests, error) {
+func (s *EventsFixtureStore) FindOne(query *EventsFixtureQuery) (*EventsFixture, error) {
 	resultSet, err := s.Find(query)
 	if err != nil {
 		return nil, err
@@ -166,7 +53,7 @@ func (s *EventsTestsStore) FindOne(query *EventsTestsQuery) (*EventsTests, error
 	return resultSet.One()
 }
 
-func (s *EventsTestsStore) MustFindOne(query *EventsTestsQuery) *EventsTests {
+func (s *EventsFixtureStore) MustFindOne(query *EventsFixtureQuery) *EventsFixture {
 	doc, err := s.FindOne(query)
 	if err != nil {
 		panic(err)
@@ -175,7 +62,7 @@ func (s *EventsTestsStore) MustFindOne(query *EventsTestsQuery) *EventsTests {
 	return doc
 }
 
-func (s *EventsTestsStore) Insert(doc *EventsTests) error {
+func (s *EventsFixtureStore) Insert(doc *EventsFixture) error {
 	if err := s.BeforeInsert(doc); err != nil {
 		return err
 	}
@@ -188,7 +75,7 @@ func (s *EventsTestsStore) Insert(doc *EventsTests) error {
 	return s.AfterInsert(doc)
 }
 
-func (s *EventsTestsStore) Update(doc *EventsTests) error {
+func (s *EventsFixtureStore) Update(doc *EventsFixture) error {
 	if err := s.BeforeUpdate(doc); err != nil {
 		return err
 	}
@@ -201,7 +88,7 @@ func (s *EventsTestsStore) Update(doc *EventsTests) error {
 	return s.AfterUpdate(doc)
 }
 
-func (s *EventsTestsStore) Save(doc *EventsTests) (updated bool, err error) {
+func (s *EventsFixtureStore) Save(doc *EventsFixture) (updated bool, err error) {
 	switch doc.IsNew() {
 	case true:
 		if err := s.BeforeInsert(doc); err != nil {
@@ -232,11 +119,11 @@ func (s *EventsTestsStore) Save(doc *EventsTests) (updated bool, err error) {
 	return
 }
 
-type EventsTestsQuery struct {
+type EventsFixtureQuery struct {
 	storable.BaseQuery
 }
 
-func (q *EventsTestsQuery) FindById(ids ...bson.ObjectId) {
+func (q *EventsFixtureQuery) FindById(ids ...bson.ObjectId) {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
@@ -244,60 +131,85 @@ func (q *EventsTestsQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, vs...))
 }
 
-type EventsTestsResultSet struct {
+type EventsFixtureResultSet struct {
 	storable.ResultSet
 }
 
-func (r *EventsTestsResultSet) All() ([]*EventsTests, error) {
-	var result []*EventsTests
+func (r *EventsFixtureResultSet) All() ([]*EventsFixture, error) {
+	var result []*EventsFixture
 	err := r.ResultSet.All(&result)
 
 	return result, err
 }
 
-func (r *EventsTestsResultSet) One() (*EventsTests, error) {
-	var result *EventsTests
+func (r *EventsFixtureResultSet) One() (*EventsFixture, error) {
+	var result *EventsFixture
 	err := r.ResultSet.One(&result)
 
 	return result, err
 }
 
-func (r *EventsTestsResultSet) Next() (*EventsTests, error) {
-	var result *EventsTests
+func (r *EventsFixtureResultSet) Next() (*EventsFixture, error) {
+	var result *EventsFixture
 	_, err := r.ResultSet.Next(&result)
 
 	return result, err
 }
 
-type MyModelStore struct {
+func (r *EventsFixtureResultSet) ForEach(f func(*EventsFixture) error) error {
+	for {
+		var result *EventsFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ResultSetFixtureStore struct {
 	storable.Store
 }
 
-func NewMyModelStore(db *mgo.Database) *MyModelStore {
-	return &MyModelStore{*storable.NewStore(db, "my_model")}
+func NewResultSetFixtureStore(db *mgo.Database) *ResultSetFixtureStore {
+	return &ResultSetFixtureStore{*storable.NewStore(db, "resultset")}
 }
 
-func (s *MyModelStore) New() (doc *MyModel) {
-	doc = &MyModel{}
+func (s *ResultSetFixtureStore) New(f string) (doc *ResultSetFixture) {
+	doc = newResultSetFixture(f)
 	doc.SetIsNew(true)
 	doc.SetId(bson.NewObjectId())
 	return
 }
 
-func (s *MyModelStore) Query() *MyModelQuery {
-	return &MyModelQuery{*storable.NewBaseQuery()}
+func (s *ResultSetFixtureStore) Query() *ResultSetFixtureQuery {
+	return &ResultSetFixtureQuery{*storable.NewBaseQuery()}
 }
 
-func (s *MyModelStore) Find(query *MyModelQuery) (*MyModelResultSet, error) {
+func (s *ResultSetFixtureStore) Find(query *ResultSetFixtureQuery) (*ResultSetFixtureResultSet, error) {
 	resultSet, err := s.Store.Find(query)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MyModelResultSet{*resultSet}, nil
+	return &ResultSetFixtureResultSet{*resultSet}, nil
 }
 
-func (s *MyModelStore) MustFind(query *MyModelQuery) *MyModelResultSet {
+func (s *ResultSetFixtureStore) MustFind(query *ResultSetFixtureQuery) *ResultSetFixtureResultSet {
 	resultSet, err := s.Find(query)
 	if err != nil {
 		panic(err)
@@ -306,7 +218,7 @@ func (s *MyModelStore) MustFind(query *MyModelQuery) *MyModelResultSet {
 	return resultSet
 }
 
-func (s *MyModelStore) FindOne(query *MyModelQuery) (*MyModel, error) {
+func (s *ResultSetFixtureStore) FindOne(query *ResultSetFixtureQuery) (*ResultSetFixture, error) {
 	resultSet, err := s.Find(query)
 	if err != nil {
 		return nil, err
@@ -315,7 +227,7 @@ func (s *MyModelStore) FindOne(query *MyModelQuery) (*MyModel, error) {
 	return resultSet.One()
 }
 
-func (s *MyModelStore) MustFindOne(query *MyModelQuery) *MyModel {
+func (s *ResultSetFixtureStore) MustFindOne(query *ResultSetFixtureQuery) *ResultSetFixture {
 	doc, err := s.FindOne(query)
 	if err != nil {
 		panic(err)
@@ -324,7 +236,7 @@ func (s *MyModelStore) MustFindOne(query *MyModelQuery) *MyModel {
 	return doc
 }
 
-func (s *MyModelStore) Insert(doc *MyModel) error {
+func (s *ResultSetFixtureStore) Insert(doc *ResultSetFixture) error {
 
 	err := s.Store.Insert(doc)
 	if err != nil {
@@ -334,7 +246,7 @@ func (s *MyModelStore) Insert(doc *MyModel) error {
 	return nil
 }
 
-func (s *MyModelStore) Update(doc *MyModel) error {
+func (s *ResultSetFixtureStore) Update(doc *ResultSetFixture) error {
 
 	err := s.Store.Update(doc)
 	if err != nil {
@@ -344,7 +256,7 @@ func (s *MyModelStore) Update(doc *MyModel) error {
 	return nil
 }
 
-func (s *MyModelStore) Save(doc *MyModel) (updated bool, err error) {
+func (s *ResultSetFixtureStore) Save(doc *ResultSetFixture) (updated bool, err error) {
 	updated, err = s.Store.Save(doc)
 	if err != nil {
 		return false, err
@@ -353,11 +265,11 @@ func (s *MyModelStore) Save(doc *MyModel) (updated bool, err error) {
 	return
 }
 
-type MyModelQuery struct {
+type ResultSetFixtureQuery struct {
 	storable.BaseQuery
 }
 
-func (q *MyModelQuery) FindById(ids ...bson.ObjectId) {
+func (q *ResultSetFixtureQuery) FindById(ids ...bson.ObjectId) {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
@@ -365,161 +277,269 @@ func (q *MyModelQuery) FindById(ids ...bson.ObjectId) {
 	q.AddCriteria(operators.In(storable.IdField, vs...))
 }
 
-type MyModelResultSet struct {
+type ResultSetFixtureResultSet struct {
 	storable.ResultSet
 }
 
-func (r *MyModelResultSet) All() ([]*MyModel, error) {
-	var result []*MyModel
+func (r *ResultSetFixtureResultSet) All() ([]*ResultSetFixture, error) {
+	var result []*ResultSetFixture
 	err := r.ResultSet.All(&result)
 
 	return result, err
 }
 
-func (r *MyModelResultSet) One() (*MyModel, error) {
-	var result *MyModel
+func (r *ResultSetFixtureResultSet) One() (*ResultSetFixture, error) {
+	var result *ResultSetFixture
 	err := r.ResultSet.One(&result)
 
 	return result, err
 }
 
-func (r *MyModelResultSet) Next() (*MyModel, error) {
-	var result *MyModel
+func (r *ResultSetFixtureResultSet) Next() (*ResultSetFixture, error) {
+	var result *ResultSetFixture
 	_, err := r.ResultSet.Next(&result)
 
 	return result, err
 }
 
+func (r *ResultSetFixtureResultSet) ForEach(f func(*ResultSetFixture) error) error {
+	for {
+		var result *ResultSetFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type SchemaFixtureStore struct {
+	storable.Store
+}
+
+func NewSchemaFixtureStore(db *mgo.Database) *SchemaFixtureStore {
+	return &SchemaFixtureStore{*storable.NewStore(db, "schema")}
+}
+
+func (s *SchemaFixtureStore) New() (doc *SchemaFixture) {
+	doc = &SchemaFixture{}
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+func (s *SchemaFixtureStore) Query() *SchemaFixtureQuery {
+	return &SchemaFixtureQuery{*storable.NewBaseQuery()}
+}
+
+func (s *SchemaFixtureStore) Find(query *SchemaFixtureQuery) (*SchemaFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SchemaFixtureResultSet{*resultSet}, nil
+}
+
+func (s *SchemaFixtureStore) MustFind(query *SchemaFixtureQuery) *SchemaFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+func (s *SchemaFixtureStore) FindOne(query *SchemaFixtureQuery) (*SchemaFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+func (s *SchemaFixtureStore) MustFindOne(query *SchemaFixtureQuery) *SchemaFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *SchemaFixtureStore) Insert(doc *SchemaFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SchemaFixtureStore) Update(doc *SchemaFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SchemaFixtureStore) Save(doc *SchemaFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type SchemaFixtureQuery struct {
+	storable.BaseQuery
+}
+
+func (q *SchemaFixtureQuery) FindById(ids ...bson.ObjectId) {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+}
+
+type SchemaFixtureResultSet struct {
+	storable.ResultSet
+}
+
+func (r *SchemaFixtureResultSet) All() ([]*SchemaFixture, error) {
+	var result []*SchemaFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+func (r *SchemaFixtureResultSet) One() (*SchemaFixture, error) {
+	var result *SchemaFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+func (r *SchemaFixtureResultSet) Next() (*SchemaFixture, error) {
+	var result *SchemaFixture
+	_, err := r.ResultSet.Next(&result)
+
+	return result, err
+}
+
+func (r *SchemaFixtureResultSet) ForEach(f func(*SchemaFixture) error) error {
+	for {
+		var result *SchemaFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type schema struct {
-	AnotherModel *schemaAnotherModel
-	EventsTests  *schemaEventsTests
-	MyModel      *schemaMyModel
+	EventsFixture    *schemaEventsFixture
+	ResultSetFixture *schemaResultSetFixture
+	SchemaFixture    *schemaSchemaFixture
 }
 
-type schemaAnotherModel struct {
-	Foo storable.Field
-	Bar storable.Field
-}
-
-type schemaEventsTests struct {
+type schemaEventsFixture struct {
 	Checks storable.Map
 }
 
-type schemaMyModel struct {
-	String        storable.Field
-	Int           storable.Field
-	Slice         storable.Field
-	SliceAlias    storable.Field
-	NestedRef     *schemaMyModelNestedRef
-	Nested        *schemaMyModelNested
-	NestedSlice   *schemaMyModelNestedSlice
-	AliasOfString storable.Field
-	Time          storable.Field
-	MapsOfString  storable.Map
-	InlineStruct  *schemaMyModelInlineStruct
+type schemaResultSetFixture struct {
+	Foo storable.Field
 }
 
-type schemaMyModelNestedRef struct {
-	X       storable.Field
-	Y       storable.Field
-	Another *schemaMyModelNestedRefAnother
-}
-
-type schemaMyModelNested struct {
-	X       storable.Field
-	Y       storable.Field
-	Another *schemaMyModelNestedAnother
-}
-
-type schemaMyModelNestedSlice struct {
-	X       storable.Field
-	Y       storable.Field
-	Another *schemaMyModelNestedSliceAnother
-}
-
-type schemaMyModelInlineStruct struct {
+type schemaSchemaFixture struct {
+	String         storable.Field
+	Int            storable.Field
+	Nested         *schemaSchemaFixtureNested
 	MapOfString    storable.Map
-	MapOfSomeType  *schemaMyModelInlineStructMapOfSomeType
 	MapOfInterface storable.Map
+	MapOfSomeType  *schemaSchemaFixtureMapOfSomeType
 }
 
-type schemaMyModelNestedRefAnother struct {
-	X storable.Field
-	Y storable.Field
+type schemaSchemaFixtureNested struct {
+	String         storable.Field
+	Int            storable.Field
+	Nested         *schemaSchemaFixtureNestedNested
+	MapOfString    storable.Map
+	MapOfInterface storable.Map
+	MapOfSomeType  *schemaSchemaFixtureNestedMapOfSomeType
 }
 
-type schemaMyModelNestedAnother struct {
-	X storable.Field
-	Y storable.Field
+type schemaSchemaFixtureMapOfSomeType struct {
+	Foo storable.Map
 }
 
-type schemaMyModelNestedSliceAnother struct {
-	X storable.Field
-	Y storable.Field
+type schemaSchemaFixtureNestedNested struct {
 }
 
-type schemaMyModelInlineStructMapOfSomeType struct {
-	X       storable.Map
-	Y       storable.Map
-	Another *schemaMyModelInlineStructMapOfSomeTypeAnother
-}
-
-type schemaMyModelInlineStructMapOfSomeTypeAnother struct {
-	X storable.Map
-	Y storable.Map
+type schemaSchemaFixtureNestedMapOfSomeType struct {
+	Foo storable.Map
 }
 
 var Schema = schema{
-	AnotherModel: &schemaAnotherModel{
-		Foo: storable.NewField("foo", "float64"),
-		Bar: storable.NewField("bar", "string"),
-	},
-	EventsTests: &schemaEventsTests{
+	EventsFixture: &schemaEventsFixture{
 		Checks: storable.NewMap("checks.[map]", "bool"),
 	},
-	MyModel: &schemaMyModel{
-		String:     storable.NewField("string", "string"),
-		Int:        storable.NewField("bla2", "int"),
-		Slice:      storable.NewField("slice", "string"),
-		SliceAlias: storable.NewField("slicealias", "string"),
-		NestedRef: &schemaMyModelNestedRef{
-			X: storable.NewField("nestedref.x", "int"),
-			Y: storable.NewField("nestedref.y", "int"),
-			Another: &schemaMyModelNestedRefAnother{
-				X: storable.NewField("nestedref.another.x", "int"),
-				Y: storable.NewField("nestedref.another.y", "int"),
+	ResultSetFixture: &schemaResultSetFixture{
+		Foo: storable.NewField("foo", "string"),
+	},
+	SchemaFixture: &schemaSchemaFixture{
+		String: storable.NewField("string", "string"),
+		Int:    storable.NewField("foo", "int"),
+		Nested: &schemaSchemaFixtureNested{
+			String:         storable.NewField("nested.string", "string"),
+			Int:            storable.NewField("nested.foo", "int"),
+			Nested:         &schemaSchemaFixtureNestedNested{},
+			MapOfString:    storable.NewMap("nested.mapofstring.[map]", "string"),
+			MapOfInterface: storable.NewMap("nested.mapofinterface.[map]", "interface{}"),
+			MapOfSomeType: &schemaSchemaFixtureNestedMapOfSomeType{
+				Foo: storable.NewMap("nested.mapofsometype.[map].foo", "string"),
 			},
 		},
-		Nested: &schemaMyModelNested{
-			X: storable.NewField("nested.x", "int"),
-			Y: storable.NewField("nested.y", "int"),
-			Another: &schemaMyModelNestedAnother{
-				X: storable.NewField("nested.another.x", "int"),
-				Y: storable.NewField("nested.another.y", "int"),
-			},
-		},
-		NestedSlice: &schemaMyModelNestedSlice{
-			X: storable.NewField("nestedslice.x", "int"),
-			Y: storable.NewField("nestedslice.y", "int"),
-			Another: &schemaMyModelNestedSliceAnother{
-				X: storable.NewField("nestedslice.another.x", "int"),
-				Y: storable.NewField("nestedslice.another.y", "int"),
-			},
-		},
-		AliasOfString: storable.NewField("aliasofstring", "string"),
-		Time:          storable.NewField("time", "time.Time"),
-		MapsOfString:  storable.NewMap("mapsofstring.[map]", "string"),
-		InlineStruct: &schemaMyModelInlineStruct{
-			MapOfString: storable.NewMap("inlinestruct.mapofstring.[map]", "string"),
-			MapOfSomeType: &schemaMyModelInlineStructMapOfSomeType{
-				X: storable.NewMap("inlinestruct.mapofsometype.[map].x", "int"),
-				Y: storable.NewMap("inlinestruct.mapofsometype.[map].y", "int"),
-				Another: &schemaMyModelInlineStructMapOfSomeTypeAnother{
-					X: storable.NewMap("inlinestruct.mapofsometype.[map].another.x", "int"),
-					Y: storable.NewMap("inlinestruct.mapofsometype.[map].another.y", "int"),
-				},
-			},
-			MapOfInterface: storable.NewMap("inlinestruct.mapofinterface.[map]", "interface{}"),
+		MapOfString:    storable.NewMap("mapofstring.[map]", "string"),
+		MapOfInterface: storable.NewMap("mapofinterface.[map]", "interface{}"),
+		MapOfSomeType: &schemaSchemaFixtureMapOfSomeType{
+			Foo: storable.NewMap("mapofsometype.[map].foo", "string"),
 		},
 	},
 }
