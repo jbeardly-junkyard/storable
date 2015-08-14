@@ -8,10 +8,14 @@ import (
 )
 
 var (
-	NonNewDocumentErr  = errors.New("Cannot insert a non new document.")
-	NewDocumentErr     = errors.New("Cannot updated a new document.")
-	EmptyQueryInRawErr = errors.New("Empty queries are not allowed on raw ops.")
-	EmptyIdErr         = errors.New("A document without id is not allowed.")
+	// ErrNonNewDocument non-new documents cannot be inserted
+	ErrNonNewDocument = errors.New("Cannot insert a non new document.")
+	// ErrNewDocument a new documents cannot be updated
+	ErrNewDocument = errors.New("Cannot updated a new document.")
+	// ErrEmptyQueryInRaw an empty query cannot be used on any *Raw method
+	ErrEmptyQueryInRaw = errors.New("Empty queries are not allowed on raw ops.")
+	// ErrEmptyID a document without Id cannot be used with Save method
+	ErrEmptyID = errors.New("A document without id is not allowed.")
 )
 
 type Store struct {
@@ -31,7 +35,7 @@ func NewStore(db *mgo.Database, collection string) *Store {
 // document is given. The document id is setted if is empty.
 func (s *Store) Insert(doc DocumentBase) error {
 	if !doc.IsNew() {
-		return NonNewDocumentErr
+		return ErrNonNewDocument
 	}
 
 	if len(doc.GetId()) == 0 {
@@ -53,7 +57,7 @@ func (s *Store) Insert(doc DocumentBase) error {
 // document is given.
 func (s *Store) Update(doc DocumentBase) error {
 	if doc.IsNew() {
-		return NewDocumentErr
+		return ErrNewDocument
 	}
 
 	sess, c := s.getSessionAndCollection()
@@ -67,7 +71,7 @@ func (s *Store) Update(doc DocumentBase) error {
 func (s *Store) Save(doc DocumentBase) (updated bool, err error) {
 	id := doc.GetId()
 	if len(id) == 0 {
-		return false, EmptyIdErr
+		return false, ErrEmptyID
 	}
 
 	sess, c := s.getSessionAndCollection()
@@ -120,7 +124,7 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 func (s *Store) RawUpdate(query Query, update interface{}, multi bool) error {
 	criteria := query.GetCriteria()
 	if len(criteria) == 0 {
-		return EmptyQueryInRawErr
+		return ErrEmptyQueryInRaw
 	}
 
 	sess, c := s.getSessionAndCollection()
@@ -141,7 +145,7 @@ func (s *Store) RawUpdate(query Query, update interface{}, multi bool) error {
 func (s *Store) RawDelete(query Query, multi bool) error {
 	criteria := query.GetCriteria()
 	if len(criteria) == 0 {
-		return EmptyQueryInRawErr
+		return ErrEmptyQueryInRaw
 	}
 
 	sess, c := s.getSessionAndCollection()

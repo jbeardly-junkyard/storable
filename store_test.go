@@ -28,7 +28,7 @@ func (s *BaseSuite) TestStore_InsertOld(c *C) {
 	c.Assert(err, IsNil)
 
 	err = st.Insert(p)
-	c.Assert(err, Equals, NonNewDocumentErr)
+	c.Assert(err, Equals, ErrNonNewDocument)
 }
 
 func (s *BaseSuite) TestStore_Update(c *C) {
@@ -84,7 +84,7 @@ func (s *BaseSuite) TestStore_UpdateNew(c *C) {
 	st := NewStore(s.db, "test")
 
 	err := st.Update(p)
-	c.Assert(err, Equals, NewDocumentErr)
+	c.Assert(err, Equals, ErrNewDocument)
 }
 
 func (s *BaseSuite) TestStore_Delete(c *C) {
@@ -272,5 +272,5 @@ func (s *BaseSuite) TestStore_RawUpdateEmpty(c *C) {
 	st := NewStore(s.db, "test")
 	q := NewBaseQuery()
 	err := st.RawUpdate(q, bson.M{"firstname": "qux"}, false)
-	c.Assert(err, Equals, EmptyQueryInRawErr)
+	c.Assert(err, Equals, ErrEmptyQueryInRaw)
 }
