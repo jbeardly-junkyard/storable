@@ -97,12 +97,14 @@ type ProductQuery struct {
 	storable.BaseQuery
 }
 
-func (q *ProductQuery) FindById(ids ...bson.ObjectId) {
+func (q *ProductQuery) FindById(ids ...bson.ObjectId) *ProductQuery {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
 	}
 	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
 }
 
 type ProductResultSet struct {

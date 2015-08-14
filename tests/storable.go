@@ -123,12 +123,14 @@ type EventsFixtureQuery struct {
 	storable.BaseQuery
 }
 
-func (q *EventsFixtureQuery) FindById(ids ...bson.ObjectId) {
+func (q *EventsFixtureQuery) FindById(ids ...bson.ObjectId) *EventsFixtureQuery {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
 	}
 	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
 }
 
 type EventsFixtureResultSet struct {
@@ -159,6 +161,154 @@ func (r *EventsFixtureResultSet) Next() (*EventsFixture, error) {
 func (r *EventsFixtureResultSet) ForEach(f func(*EventsFixture) error) error {
 	for {
 		var result *EventsFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type QueryFixtureStore struct {
+	storable.Store
+}
+
+func NewQueryFixtureStore(db *mgo.Database) *QueryFixtureStore {
+	return &QueryFixtureStore{*storable.NewStore(db, "query")}
+}
+
+func (s *QueryFixtureStore) New(f string) (doc *QueryFixture) {
+	doc = newQueryFixture(f)
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+func (s *QueryFixtureStore) Query() *QueryFixtureQuery {
+	return &QueryFixtureQuery{*storable.NewBaseQuery()}
+}
+
+func (s *QueryFixtureStore) Find(query *QueryFixtureQuery) (*QueryFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &QueryFixtureResultSet{*resultSet}, nil
+}
+
+func (s *QueryFixtureStore) MustFind(query *QueryFixtureQuery) *QueryFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+func (s *QueryFixtureStore) FindOne(query *QueryFixtureQuery) (*QueryFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+func (s *QueryFixtureStore) MustFindOne(query *QueryFixtureQuery) *QueryFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *QueryFixtureStore) Insert(doc *QueryFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *QueryFixtureStore) Update(doc *QueryFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *QueryFixtureStore) Save(doc *QueryFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type QueryFixtureQuery struct {
+	storable.BaseQuery
+}
+
+func (q *QueryFixtureQuery) FindById(ids ...bson.ObjectId) *QueryFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type QueryFixtureResultSet struct {
+	storable.ResultSet
+}
+
+func (r *QueryFixtureResultSet) All() ([]*QueryFixture, error) {
+	var result []*QueryFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+func (r *QueryFixtureResultSet) One() (*QueryFixture, error) {
+	var result *QueryFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+func (r *QueryFixtureResultSet) Next() (*QueryFixture, error) {
+	var result *QueryFixture
+	_, err := r.ResultSet.Next(&result)
+
+	return result, err
+}
+
+func (r *QueryFixtureResultSet) ForEach(f func(*QueryFixture) error) error {
+	for {
+		var result *QueryFixture
 		found, err := r.ResultSet.Next(&result)
 		if err != nil {
 			return err
@@ -269,12 +419,14 @@ type ResultSetFixtureQuery struct {
 	storable.BaseQuery
 }
 
-func (q *ResultSetFixtureQuery) FindById(ids ...bson.ObjectId) {
+func (q *ResultSetFixtureQuery) FindById(ids ...bson.ObjectId) *ResultSetFixtureQuery {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
 	}
 	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
 }
 
 type ResultSetFixtureResultSet struct {
@@ -415,12 +567,14 @@ type SchemaFixtureQuery struct {
 	storable.BaseQuery
 }
 
-func (q *SchemaFixtureQuery) FindById(ids ...bson.ObjectId) {
+func (q *SchemaFixtureQuery) FindById(ids ...bson.ObjectId) *SchemaFixtureQuery {
 	var vs []interface{}
 	for _, id := range ids {
 		vs = append(vs, id)
 	}
 	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
 }
 
 type SchemaFixtureResultSet struct {
@@ -473,14 +627,317 @@ func (r *SchemaFixtureResultSet) ForEach(f func(*SchemaFixture) error) error {
 	return nil
 }
 
+type StoreFixtureStore struct {
+	storable.Store
+}
+
+func NewStoreFixtureStore(db *mgo.Database) *StoreFixtureStore {
+	return &StoreFixtureStore{*storable.NewStore(db, "store")}
+}
+
+func (s *StoreFixtureStore) New() (doc *StoreFixture) {
+	doc = &StoreFixture{}
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+func (s *StoreFixtureStore) Query() *StoreFixtureQuery {
+	return &StoreFixtureQuery{*storable.NewBaseQuery()}
+}
+
+func (s *StoreFixtureStore) Find(query *StoreFixtureQuery) (*StoreFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StoreFixtureResultSet{*resultSet}, nil
+}
+
+func (s *StoreFixtureStore) MustFind(query *StoreFixtureQuery) *StoreFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+func (s *StoreFixtureStore) FindOne(query *StoreFixtureQuery) (*StoreFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+func (s *StoreFixtureStore) MustFindOne(query *StoreFixtureQuery) *StoreFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *StoreFixtureStore) Insert(doc *StoreFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *StoreFixtureStore) Update(doc *StoreFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *StoreFixtureStore) Save(doc *StoreFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type StoreFixtureQuery struct {
+	storable.BaseQuery
+}
+
+func (q *StoreFixtureQuery) FindById(ids ...bson.ObjectId) *StoreFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type StoreFixtureResultSet struct {
+	storable.ResultSet
+}
+
+func (r *StoreFixtureResultSet) All() ([]*StoreFixture, error) {
+	var result []*StoreFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+func (r *StoreFixtureResultSet) One() (*StoreFixture, error) {
+	var result *StoreFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+func (r *StoreFixtureResultSet) Next() (*StoreFixture, error) {
+	var result *StoreFixture
+	_, err := r.ResultSet.Next(&result)
+
+	return result, err
+}
+
+func (r *StoreFixtureResultSet) ForEach(f func(*StoreFixture) error) error {
+	for {
+		var result *StoreFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type StoreWithConstructFixtureStore struct {
+	storable.Store
+}
+
+func NewStoreWithConstructFixtureStore(db *mgo.Database) *StoreWithConstructFixtureStore {
+	return &StoreWithConstructFixtureStore{*storable.NewStore(db, "store_construct")}
+}
+
+func (s *StoreWithConstructFixtureStore) New(f string) (doc *StoreWithConstructFixture) {
+	doc = newStoreWithConstructFixture(f)
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+func (s *StoreWithConstructFixtureStore) Query() *StoreWithConstructFixtureQuery {
+	return &StoreWithConstructFixtureQuery{*storable.NewBaseQuery()}
+}
+
+func (s *StoreWithConstructFixtureStore) Find(query *StoreWithConstructFixtureQuery) (*StoreWithConstructFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &StoreWithConstructFixtureResultSet{*resultSet}, nil
+}
+
+func (s *StoreWithConstructFixtureStore) MustFind(query *StoreWithConstructFixtureQuery) *StoreWithConstructFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+func (s *StoreWithConstructFixtureStore) FindOne(query *StoreWithConstructFixtureQuery) (*StoreWithConstructFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+func (s *StoreWithConstructFixtureStore) MustFindOne(query *StoreWithConstructFixtureQuery) *StoreWithConstructFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *StoreWithConstructFixtureStore) Insert(doc *StoreWithConstructFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *StoreWithConstructFixtureStore) Update(doc *StoreWithConstructFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *StoreWithConstructFixtureStore) Save(doc *StoreWithConstructFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type StoreWithConstructFixtureQuery struct {
+	storable.BaseQuery
+}
+
+func (q *StoreWithConstructFixtureQuery) FindById(ids ...bson.ObjectId) *StoreWithConstructFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type StoreWithConstructFixtureResultSet struct {
+	storable.ResultSet
+}
+
+func (r *StoreWithConstructFixtureResultSet) All() ([]*StoreWithConstructFixture, error) {
+	var result []*StoreWithConstructFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+func (r *StoreWithConstructFixtureResultSet) One() (*StoreWithConstructFixture, error) {
+	var result *StoreWithConstructFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+func (r *StoreWithConstructFixtureResultSet) Next() (*StoreWithConstructFixture, error) {
+	var result *StoreWithConstructFixture
+	_, err := r.ResultSet.Next(&result)
+
+	return result, err
+}
+
+func (r *StoreWithConstructFixtureResultSet) ForEach(f func(*StoreWithConstructFixture) error) error {
+	for {
+		var result *StoreWithConstructFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type schema struct {
-	EventsFixture    *schemaEventsFixture
-	ResultSetFixture *schemaResultSetFixture
-	SchemaFixture    *schemaSchemaFixture
+	EventsFixture             *schemaEventsFixture
+	QueryFixture              *schemaQueryFixture
+	ResultSetFixture          *schemaResultSetFixture
+	SchemaFixture             *schemaSchemaFixture
+	StoreFixture              *schemaStoreFixture
+	StoreWithConstructFixture *schemaStoreWithConstructFixture
 }
 
 type schemaEventsFixture struct {
 	Checks storable.Map
+}
+
+type schemaQueryFixture struct {
+	Foo storable.Field
 }
 
 type schemaResultSetFixture struct {
@@ -494,6 +951,14 @@ type schemaSchemaFixture struct {
 	MapOfString    storable.Map
 	MapOfInterface storable.Map
 	MapOfSomeType  *schemaSchemaFixtureMapOfSomeType
+}
+
+type schemaStoreFixture struct {
+	Foo storable.Field
+}
+
+type schemaStoreWithConstructFixture struct {
+	Foo storable.Field
 }
 
 type schemaSchemaFixtureNested struct {
@@ -520,6 +985,9 @@ var Schema = schema{
 	EventsFixture: &schemaEventsFixture{
 		Checks: storable.NewMap("checks.[map]", "bool"),
 	},
+	QueryFixture: &schemaQueryFixture{
+		Foo: storable.NewField("foo", "string"),
+	},
 	ResultSetFixture: &schemaResultSetFixture{
 		Foo: storable.NewField("foo", "string"),
 	},
@@ -541,5 +1009,11 @@ var Schema = schema{
 		MapOfSomeType: &schemaSchemaFixtureMapOfSomeType{
 			Foo: storable.NewMap("mapofsometype.[map].foo", "string"),
 		},
+	},
+	StoreFixture: &schemaStoreFixture{
+		Foo: storable.NewField("foo", "string"),
+	},
+	StoreWithConstructFixture: &schemaStoreWithConstructFixture{
+		Foo: storable.NewField("foo", "string"),
 	},
 }
