@@ -130,6 +130,31 @@ func (r *ProductResultSet) Next() (*Product, error) {
 	return result, err
 }
 
+func (r *ProductResultSet) ForEach(f func(*Product) error) error {
+	for {
+		var result *Product
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type schema struct {
 	Product *schemaProduct
 }

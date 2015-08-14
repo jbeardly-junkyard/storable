@@ -11,6 +11,9 @@ var (
 	ErrResultSetClosed = errors.New("closed resultset")
 	//ErrNotFound document not found
 	ErrNotFound = errors.New("document not found")
+	// ErrStop if is used on a callback of a ResultSet.ForEach function the loop
+	// is stopped
+	ErrStop = errors.New("document not found")
 )
 
 // ResultSet contains the result of an executed query command.

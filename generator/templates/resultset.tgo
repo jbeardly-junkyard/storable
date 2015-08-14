@@ -23,3 +23,28 @@ func (r *{{.ResultSetName}}) Next() (*{{.Name}}, error) {
 
     return result, err
 }
+
+func (r *{{.ResultSetName}}) ForEach(f func(*{{.Name}}) error) error {
+    for {
+        var result *{{.Name}}
+        found, err := r.ResultSet.Next(&result)
+        if err != nil {
+            return err
+        }
+
+        if !found {
+            break
+        }
+
+        err = f(result)
+        if err == storable.ErrStop {
+            break
+        }
+
+        if  err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
