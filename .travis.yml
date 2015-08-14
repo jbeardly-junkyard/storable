@@ -16,4 +16,13 @@ install:
 
 script:
   - go generate ./...
-  - go test -v ./...
+  - go test -v github.com/tyba/storable -covermode=count -coverprofile=coverage.out
+  - go test -v github.com/tyba/storable/operators -covermode=count -coverprofile=tmp.out
+  - tail -n +2 tmp.out >> coverage.out
+  - go test -v github.com/tyba/storable/generator -covermode=count -coverprofile=tmp.out
+  - tail -n +2 tmp.out >> coverage.out
+  - go test -v github.com/tyba/storable/tests -covermode=count -coverprofile=tmp.out
+  - tail -n +2 tmp.out >> coverage.out
+
+after_success:
+  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ttHfPtGawLnRyuGi8dxsddBDs1COrrI2o
