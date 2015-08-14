@@ -397,7 +397,7 @@ func (r *RecurResultSet) All() ([]*Recur, error) {
 
 func (r *RecurResultSet) One() (*Recur, error) {
 	var result *Recur
-	_, err := r.ResultSet.One(&result)
+	err := r.ResultSet.One(&result)
 
 	return result, err
 }

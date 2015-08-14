@@ -174,7 +174,7 @@ func (r *ProductResultSet) All() ([]*Product, error) {
 
 func (r *ProductResultSet) One() (*Product, error) {
 	var result *Product
-	_, err := r.ResultSet.One(&result)
+	err := r.ResultSet.One(&result)
 
 	return result, err
 }

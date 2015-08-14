@@ -115,7 +115,7 @@ func (r *AnotherModelResultSet) All() ([]*AnotherModel, error) {
 
 func (r *AnotherModelResultSet) One() (*AnotherModel, error) {
 	var result *AnotherModel
-	_, err := r.ResultSet.One(&result)
+	err := r.ResultSet.One(&result)
 
 	return result, err
 }
@@ -243,7 +243,7 @@ func (r *MyModelResultSet) All() ([]*MyModel, error) {
 
 func (r *MyModelResultSet) One() (*MyModel, error) {
 	var result *MyModel
-	_, err := r.ResultSet.One(&result)
+	err := r.ResultSet.One(&result)
 
 	return result, err
 }

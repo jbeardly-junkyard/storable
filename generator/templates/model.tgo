@@ -39,7 +39,6 @@ func (s *{{.StoreName}}) MustFind(query *{{.QueryName}}) *{{.ResultSetName}} {
     return resultSet
 }
 
-
 func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     resultSet, err := s.Find(query)
     if err != nil {
