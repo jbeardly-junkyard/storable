@@ -65,52 +65,15 @@ func (s *ProductStore) MustFindOne(query *ProductQuery) *Product {
 }
 
 func (s *ProductStore) Insert(doc *Product) error {
-	if err := doc.BeforeInsert(); err != nil {
-		return storable.HookError{
-			Hook:  "BeforeInsert",
-			Field: "",
-			Cause: err,
-		}
-	}
-	if err := doc.BeforeSave(); err != nil {
-		return storable.HookError{
-			Hook:  "BeforeSave",
-			Field: "",
-			Cause: err,
-		}
-	}
-	if err := doc.Status.BeforeInsert(); err != nil {
-		return storable.HookError{
-			Hook:  "BeforeInsert",
-			Field: ".Status",
-			Cause: err,
-		}
-	}
-
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
-	}
-	if err := doc.Status.AfterInsert(); err != nil {
-		return storable.HookError{
-			Hook:  "AfterInsert",
-			Field: ".Status",
-			Cause: err,
-		}
 	}
 
 	return nil
 }
 
 func (s *ProductStore) Update(doc *Product) error {
-	if err := doc.BeforeSave(); err != nil {
-		return storable.HookError{
-			Hook:  "BeforeSave",
-			Field: "",
-			Cause: err,
-		}
-	}
-
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err
@@ -120,30 +83,9 @@ func (s *ProductStore) Update(doc *Product) error {
 }
 
 func (s *ProductStore) Save(doc *Product) (updated bool, err error) {
-	if err := doc.BeforeSave(); err != nil {
-		return updated, storable.HookError{
-			Hook:  "BeforeSave",
-			Field: "",
-			Cause: err,
-		}
-	}
-
 	updated, err = s.Store.Save(doc)
 	if err != nil {
 		return false, err
-	}
-
-	if updated {
-
-	} else {
-		if err := doc.Status.AfterInsert(); err != nil {
-			return updated, storable.HookError{
-				Hook:  "AfterInsert",
-				Field: ".Status",
-				Cause: err,
-			}
-		}
-
 	}
 
 	return

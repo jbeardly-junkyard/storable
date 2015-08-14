@@ -75,9 +75,6 @@ type Model struct {
 	CheckedNode *types.Named
 	NewFunc     *types.Func
 	Package     *types.Package
-
-	Hooks      []Hook
-	StoreHooks []Hook
 }
 
 func NewModel(n string) *Model {
@@ -245,7 +242,6 @@ type Field struct {
 	Fields      []*Field
 	Parent      *Field
 	isMap       bool
-	Hooks       []Hook
 }
 
 func NewField(n, t string, tag reflect.StructTag) *Field {
@@ -378,33 +374,6 @@ func reverseSliceStrings(input []string) []string {
 	return append(reverseSliceStrings(input[1:]), input[0])
 }
 
-type Hook struct {
-	Before bool
-	Action HookAction
-}
-
-func (h Hook) MethodName() string {
-	var ret string
-
-	if h.Before {
-		ret += "Before"
-	} else {
-		ret += "After"
-	}
-
-	ret += string(h.Action)
-
-	return ret
-}
-
-type HookAction string
-
-const (
-	InsertHook HookAction = "Insert"
-	UpdateHook HookAction = "Update"
-	SaveHook   HookAction = "Save"
-)
-
 func isTypeOrPtrTo(ptr types.Type, named *types.Named) bool {
 	switch ty := ptr.(type) {
 	case *types.Pointer:
@@ -437,4 +406,13 @@ func typeString(ty types.Type, pkg *types.Package) string {
 func isPtrToInvalid(ty types.Type) bool {
 	ptrTo, ok := ty.(*types.Pointer)
 	return ok && ptrTo.Elem() == types.Typ[types.Invalid]
+}
+
+func isBuiltinError(typ types.Type) bool {
+	named, ok := typ.(*types.Named)
+	if !ok {
+		return false
+	}
+
+	return named.Obj().Name() == "error" && named.Obj().Parent() == types.Universe
 }

@@ -58,39 +58,27 @@ func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
 }
 
 func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
-    {{$.CallHooks "before" "insert" false .}}
     err := s.Store.Insert(doc)
     if err != nil {
         return err
     }
-    {{$.CallHooks "after" "insert" false .}}
 
     return nil
 }
 
 func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
-    {{$.CallHooks "before" "update" false .}}
     err := s.Store.Update(doc)
     if err != nil {
         return err
     }
-    {{$.CallHooks "after" "update" false .}}
 
     return nil
 }
 
 func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
-    {{$.CallHooks "before" "save" true .}}
-
     updated, err = s.Store.Save(doc)
     if err != nil {
         return false, err
-    }
-
-    if updated {
-        {{$.CallHooks "after" "update" true .}}
-    } else {
-        {{$.CallHooks "after" "insert" true .}}
     }
 
     return

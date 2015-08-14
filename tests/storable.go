@@ -55,7 +55,6 @@ func (s *AnotherModelStore) MustFindOne(query *AnotherModelQuery) *AnotherModel 
 }
 
 func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
-
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
@@ -65,7 +64,6 @@ func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
 }
 
 func (s *AnotherModelStore) Update(doc *AnotherModel) error {
-
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err
@@ -75,16 +73,9 @@ func (s *AnotherModelStore) Update(doc *AnotherModel) error {
 }
 
 func (s *AnotherModelStore) Save(doc *AnotherModel) (updated bool, err error) {
-
 	updated, err = s.Store.Save(doc)
 	if err != nil {
 		return false, err
-	}
-
-	if updated {
-
-	} else {
-
 	}
 
 	return
@@ -183,7 +174,6 @@ func (s *MyModelStore) MustFindOne(query *MyModelQuery) *MyModel {
 }
 
 func (s *MyModelStore) Insert(doc *MyModel) error {
-
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
@@ -193,7 +183,6 @@ func (s *MyModelStore) Insert(doc *MyModel) error {
 }
 
 func (s *MyModelStore) Update(doc *MyModel) error {
-
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err
@@ -203,16 +192,9 @@ func (s *MyModelStore) Update(doc *MyModel) error {
 }
 
 func (s *MyModelStore) Save(doc *MyModel) (updated bool, err error) {
-
 	updated, err = s.Store.Save(doc)
 	if err != nil {
 		return false, err
-	}
-
-	if updated {
-
-	} else {
-
 	}
 
 	return
