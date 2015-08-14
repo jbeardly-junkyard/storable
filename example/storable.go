@@ -65,6 +65,7 @@ func (s *ProductStore) MustFindOne(query *ProductQuery) *Product {
 }
 
 func (s *ProductStore) Insert(doc *Product) error {
+
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
@@ -74,6 +75,7 @@ func (s *ProductStore) Insert(doc *Product) error {
 }
 
 func (s *ProductStore) Update(doc *Product) error {
+
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err

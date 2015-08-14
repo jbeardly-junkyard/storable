@@ -6,8 +6,10 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 
 	_ "golang.org/x/tools/go/gcimporter"
@@ -17,10 +19,10 @@ import (
 const BaseDocument = "github.com/tyba/storable.Document"
 
 type Processor struct {
-	Path   string
-	Ignore map[string]bool
-
-	TypesPkg *types.Package
+	Path       string
+	Ignore     map[string]bool
+	TypesPkg   *types.Package
+	SourceCode map[string][]byte
 }
 
 func NewProcessor(path string, ignore []string) *Processor {
@@ -37,6 +39,11 @@ func NewProcessor(path string, ignore []string) *Processor {
 
 func (p *Processor) Do() (*Package, error) {
 	files, err := p.getSourceFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	p.SourceCode, err = p.readSourceFiles(files)
 	if err != nil {
 		return nil, err
 	}
@@ -66,17 +73,40 @@ func (p *Processor) getSourceFiles() ([]string, error) {
 		return nil, fmt.Errorf("%s: no buildable Go files", p.Path)
 	}
 
-	return joinDirectory(p.Path, files), nil
+	return joinDirectory(p.Path, p.removeIngoredFiles(files)), nil
+}
+
+func (p *Processor) removeIngoredFiles(filenames []string) []string {
+	var output []string
+	for _, filename := range filenames {
+		if _, ok := p.Ignore[filename]; ok {
+			continue
+		}
+
+		output = append(output, filename)
+	}
+
+	return output
+}
+
+func (p *Processor) readSourceFiles(filenames []string) (map[string][]byte, error) {
+	source := make(map[string][]byte, 0)
+	for _, filename := range filenames {
+		b, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return source, err
+		}
+
+		source[filename] = b
+	}
+
+	return source, nil
 }
 
 func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error) {
 	var files []*ast.File
 	fs := token.NewFileSet()
 	for _, filename := range filenames {
-		if _, ok := p.Ignore[filename]; ok {
-			continue
-		}
-
 		file, err := parser.ParseFile(fs, filename, nil, 0)
 		if err != nil {
 			return nil, fmt.Errorf("parsing package: %s: %s", filename, err)
@@ -175,6 +205,7 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 
 func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	m := NewModel(name)
+	m.Events = p.getEvents(name)
 
 	var base int
 	if base, m.Fields = p.getFields(s); base == -1 {
@@ -189,6 +220,31 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 	base, fields = p.processFields(s, []*types.Struct{})
 	return
+}
+
+func (p *Processor) getEvents(name string) []Event {
+	events := []Event{}
+
+	all := []Event{BeforeInsert, AfterInsert, BeforeUpdate, AfterUpdate}
+	for _, e := range all {
+		if p.isEventPresent(name, e) {
+			events = append(events, e)
+		}
+	}
+
+	return events
+}
+
+func (p *Processor) isEventPresent(name string, e Event) bool {
+	re := regexp.MustCompile(fmt.Sprintf("\\*%sStore\\) %s\\(", name, e))
+
+	for _, code := range p.SourceCode {
+		if re.Match(code) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Returns which field index is an embedded storable.Document, or -1 if none.

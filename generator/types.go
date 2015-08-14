@@ -72,6 +72,7 @@ type Model struct {
 	Collection  string
 	Type        string
 	Fields      []*Field
+	Events      []Event
 	CheckedNode *types.Named
 	NewFunc     *types.Func
 	Package     *types.Package
@@ -85,6 +86,7 @@ func NewModel(n string) *Model {
 		ResultSetName: fmt.Sprintf(ResultSetNamePattern, n),
 		Type:          "struct",
 		Fields:        make([]*Field, 0),
+		Events:        make([]Event, 0),
 	}
 }
 
@@ -212,6 +214,16 @@ func (m *Model) NewRetVars() string {
 	}
 
 	return strings.Join(ret, ", ")
+}
+
+func (m *Model) IsEventActive(expected Event) bool {
+	for _, e := range m.Events {
+		if e == expected {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (m *Model) isStore(typ types.Type) bool {
@@ -416,3 +428,12 @@ func isBuiltinError(typ types.Type) bool {
 
 	return named.Obj().Name() == "error" && named.Obj().Parent() == types.Universe
 }
+
+type Event string
+
+const (
+	BeforeInsert Event = "BeforeInsert"
+	AfterInsert  Event = "AfterInsert"
+	BeforeUpdate Event = "BeforeUpdate"
+	AfterUpdate  Event = "AfterUpdate"
+)

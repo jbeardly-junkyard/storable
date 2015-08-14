@@ -55,6 +55,7 @@ func (s *AnotherModelStore) MustFindOne(query *AnotherModelQuery) *AnotherModel 
 }
 
 func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
+
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
@@ -64,6 +65,7 @@ func (s *AnotherModelStore) Insert(doc *AnotherModel) error {
 }
 
 func (s *AnotherModelStore) Update(doc *AnotherModel) error {
+
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err
@@ -113,6 +115,155 @@ func (r *AnotherModelResultSet) One() (*AnotherModel, error) {
 
 func (r *AnotherModelResultSet) Next() (*AnotherModel, error) {
 	var result *AnotherModel
+	_, err := r.ResultSet.Next(&result)
+
+	return result, err
+}
+
+type EventsTestsStore struct {
+	storable.Store
+}
+
+func NewEventsTestsStore(db *mgo.Database) *EventsTestsStore {
+	return &EventsTestsStore{*storable.NewStore(db, "event")}
+}
+
+func (s *EventsTestsStore) New() (doc *EventsTests) {
+	doc = newEventsTests()
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+func (s *EventsTestsStore) Query() *EventsTestsQuery {
+	return &EventsTestsQuery{*storable.NewBaseQuery()}
+}
+
+func (s *EventsTestsStore) Find(query *EventsTestsQuery) (*EventsTestsResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventsTestsResultSet{*resultSet}, nil
+}
+
+func (s *EventsTestsStore) MustFind(query *EventsTestsQuery) *EventsTestsResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+func (s *EventsTestsStore) FindOne(query *EventsTestsQuery) (*EventsTests, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+func (s *EventsTestsStore) MustFindOne(query *EventsTestsQuery) *EventsTests {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+func (s *EventsTestsStore) Insert(doc *EventsTests) error {
+	if err := s.BeforeInsert(doc); err != nil {
+		return err
+	}
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return s.AfterInsert(doc)
+}
+
+func (s *EventsTestsStore) Update(doc *EventsTests) error {
+	if err := s.BeforeUpdate(doc); err != nil {
+		return err
+	}
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return s.AfterUpdate(doc)
+}
+
+func (s *EventsTestsStore) Save(doc *EventsTests) (updated bool, err error) {
+	switch doc.IsNew() {
+	case true:
+		if err := s.BeforeInsert(doc); err != nil {
+			return false, err
+		}
+	case false:
+		if err := s.BeforeUpdate(doc); err != nil {
+			return false, err
+		}
+	}
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	switch updated {
+	case false:
+		if err := s.AfterInsert(doc); err != nil {
+			return false, err
+		}
+	case true:
+		if err := s.AfterUpdate(doc); err != nil {
+			return false, err
+		}
+	}
+
+	return
+}
+
+type EventsTestsQuery struct {
+	storable.BaseQuery
+}
+
+func (q *EventsTestsQuery) FindById(ids ...bson.ObjectId) {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+}
+
+type EventsTestsResultSet struct {
+	storable.ResultSet
+}
+
+func (r *EventsTestsResultSet) All() ([]*EventsTests, error) {
+	var result []*EventsTests
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+func (r *EventsTestsResultSet) One() (*EventsTests, error) {
+	var result *EventsTests
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+func (r *EventsTestsResultSet) Next() (*EventsTests, error) {
+	var result *EventsTests
 	_, err := r.ResultSet.Next(&result)
 
 	return result, err
@@ -174,6 +325,7 @@ func (s *MyModelStore) MustFindOne(query *MyModelQuery) *MyModel {
 }
 
 func (s *MyModelStore) Insert(doc *MyModel) error {
+
 	err := s.Store.Insert(doc)
 	if err != nil {
 		return err
@@ -183,6 +335,7 @@ func (s *MyModelStore) Insert(doc *MyModel) error {
 }
 
 func (s *MyModelStore) Update(doc *MyModel) error {
+
 	err := s.Store.Update(doc)
 	if err != nil {
 		return err
@@ -239,12 +392,17 @@ func (r *MyModelResultSet) Next() (*MyModel, error) {
 
 type schema struct {
 	AnotherModel *schemaAnotherModel
+	EventsTests  *schemaEventsTests
 	MyModel      *schemaMyModel
 }
 
 type schemaAnotherModel struct {
 	Foo storable.Field
 	Bar storable.Field
+}
+
+type schemaEventsTests struct {
+	Checks storable.Map
 }
 
 type schemaMyModel struct {
@@ -315,6 +473,9 @@ var Schema = schema{
 	AnotherModel: &schemaAnotherModel{
 		Foo: storable.NewField("foo", "float64"),
 		Bar: storable.NewField("bar", "string"),
+	},
+	EventsTests: &schemaEventsTests{
+		Checks: storable.NewMap("checks.[map]", "bool"),
 	},
 	MyModel: &schemaMyModel{
 		String:     storable.NewField("string", "string"),

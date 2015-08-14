@@ -67,3 +67,52 @@ func NewAnotherModelStore(db *mgo.Database, foo bool) *AnotherModelStore {
 func NewAnotherModel() *AnotherModel {
 	return &AnotherModel{}
 }
+
+type EventsTests struct {
+	storable.Document `bson:",inline" collection:"event"`
+	Checks            map[string]bool
+	MustFailBefore    error
+	MustFailAfter     error
+}
+
+func newEventsTests() *EventsTests {
+	return &EventsTests{
+		Checks: make(map[string]bool, 0),
+	}
+}
+
+func (s *EventsTestsStore) BeforeInsert(doc *EventsTests) error {
+	if doc.MustFailBefore != nil {
+		return doc.MustFailBefore
+	}
+
+	doc.Checks["BeforeInsert"] = true
+	return nil
+}
+
+func (s *EventsTestsStore) AfterInsert(doc *EventsTests) error {
+	if doc.MustFailAfter != nil {
+		return doc.MustFailAfter
+	}
+
+	doc.Checks["AfterInsert"] = true
+	return nil
+}
+
+func (s *EventsTestsStore) BeforeUpdate(doc *EventsTests) error {
+	if doc.MustFailBefore != nil {
+		return doc.MustFailBefore
+	}
+
+	doc.Checks["BeforeUpdate"] = true
+	return nil
+}
+
+func (s *EventsTestsStore) AfterUpdate(doc *EventsTests) error {
+	if doc.MustFailAfter != nil {
+		return doc.MustFailAfter
+	}
+
+	doc.Checks["AfterUpdate"] = true
+	return nil
+}
