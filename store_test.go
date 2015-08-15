@@ -184,9 +184,9 @@ func (s *BaseSuite) TestStore_RawUpdate(c *C) {
 	st.Insert(p2)
 
 	q := NewBaseQuery()
-	q.AddCriteria(bson.M{"firstname": "foo"})
+	q.AddCriteria(bson.M{"lastname": "bar"})
 
-	err := st.RawUpdate(q, bson.M{"lastname": "qux"}, true)
+	err := st.RawUpdate(q, bson.M{"lastname": "qux"}, false)
 	c.Assert(err, IsNil)
 
 	q = NewBaseQuery()
@@ -216,11 +216,11 @@ func (s *BaseSuite) TestStore_RawUpdateMulti(c *C) {
 	q := NewBaseQuery()
 	q.AddCriteria(bson.M{"lastname": "bar"})
 
-	err := st.RawUpdate(q, bson.M{"firstname": "qux"}, true)
+	err := st.RawUpdate(q, bson.M{"lastname": "qux"}, true)
 	c.Assert(err, IsNil)
 
 	q = NewBaseQuery()
-	q.AddCriteria(bson.M{"firstname": "qux"})
+	q.AddCriteria(bson.M{"lastname": "qux"})
 
 	r, err := st.Find(q)
 	c.Assert(err, IsNil)
@@ -228,6 +228,13 @@ func (s *BaseSuite) TestStore_RawUpdateMulti(c *C) {
 	var result []*Person
 	c.Assert(r.All(&result), IsNil)
 	c.Assert(result, HasLen, 2)
+}
+
+func (s *BaseSuite) TestStore_RawUpdateEmpty(c *C) {
+	st := NewStore(s.db, "test")
+	q := NewBaseQuery()
+	err := st.RawUpdate(q, bson.M{"firstname": "qux"}, false)
+	c.Assert(err, Equals, ErrEmptyQueryInRaw)
 }
 
 func (s *BaseSuite) TestStore_RawDelete(c *C) {
@@ -268,9 +275,9 @@ func (s *BaseSuite) TestStore_RawDeleteMulti(c *C) {
 	c.Assert(count, Equals, 0)
 }
 
-func (s *BaseSuite) TestStore_RawUpdateEmpty(c *C) {
+func (s *BaseSuite) TestStore_RawDeleteEmpty(c *C) {
 	st := NewStore(s.db, "test")
 	q := NewBaseQuery()
-	err := st.RawUpdate(q, bson.M{"firstname": "qux"}, false)
+	err := st.RawDelete(q, false)
 	c.Assert(err, Equals, ErrEmptyQueryInRaw)
 }

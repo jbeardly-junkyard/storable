@@ -60,10 +60,6 @@ func (r *ResultSet) Next(doc interface{}) (bool, error) {
 	}
 
 	returned := r.mgoIter.Next(doc)
-	if base, ok := doc.(DocumentBase); ok && returned {
-		base.SetIsNew(false)
-	}
-
 	return returned, r.mgoIter.Err()
 }
 

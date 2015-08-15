@@ -1,7 +1,6 @@
 package storable
 
 import (
-	"fmt"
 	"strings"
 
 	"gopkg.in/mgo.v2/bson"
@@ -32,6 +31,8 @@ type Map struct {
 	typ  string
 }
 
+var mapPlaceholder = "[map]"
+
 // NewMap return a new Map instance.
 func NewMap(bson, typ string) Map {
 	return Map{bson, typ}
@@ -44,7 +45,7 @@ func (f Map) Type() string {
 
 // Key returns a Field for the specific map key.
 func (f Map) Key(key string) Field {
-	bson := strings.Replace(f.bson, "[map]", key, -1)
+	bson := strings.Replace(f.bson, mapPlaceholder, key, -1)
 	return NewField(bson, f.typ)
 }
 
@@ -114,15 +115,4 @@ func (s Select) ToMap() bson.M {
 // IsEmpty returns if this select is empty or not
 func (s Select) IsEmpty() bool {
 	return len(s) == 0
-}
-
-// A HookError wraps an error returned from a call to a hook method.
-type HookError struct {
-	Hook  string // Name of the hook method that returned the cause.
-	Field string // Path from the root to the field that caused the error, dot-separated.
-	Cause error  // The wrapped error.
-}
-
-func (e HookError) Error() string {
-	return fmt.Sprintf("error on %v.%v: %v", e.Field, e.Hook, e.Cause)
 }
