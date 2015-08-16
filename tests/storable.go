@@ -208,6 +208,192 @@ func (r *EventsFixtureResultSet) ForEach(f func(*EventsFixture) error) error {
 	return nil
 }
 
+type EventsSaveFixtureStore struct {
+	storable.Store
+}
+
+func NewEventsSaveFixtureStore(db *mgo.Database) *EventsSaveFixtureStore {
+	return &EventsSaveFixtureStore{*storable.NewStore(db, "event")}
+}
+
+// New returns a new instance of EventsSaveFixture.
+func (s *EventsSaveFixtureStore) New() (doc *EventsSaveFixture) {
+	doc = newEventsSaveFixture()
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+// Query return a new instance of EventsSaveFixtureQuery.
+func (s *EventsSaveFixtureStore) Query() *EventsSaveFixtureQuery {
+	return &EventsSaveFixtureQuery{*storable.NewBaseQuery()}
+}
+
+// Find performs a find on the collection using the given query.
+func (s *EventsSaveFixtureStore) Find(query *EventsSaveFixtureQuery) (*EventsSaveFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventsSaveFixtureResultSet{ResultSet: *resultSet}, nil
+}
+
+// MustFind like Find but panics on error
+func (s *EventsSaveFixtureStore) MustFind(query *EventsSaveFixtureQuery) *EventsSaveFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+// FindOne performs a find on the collection using the given query returning
+// the first document from the resultset.
+func (s *EventsSaveFixtureStore) FindOne(query *EventsSaveFixtureQuery) (*EventsSaveFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+// MustFindOne like FindOne but panics on error
+func (s *EventsSaveFixtureStore) MustFindOne(query *EventsSaveFixtureQuery) *EventsSaveFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+// Insert insert the given document on the collection, trigger BeforeInsert and
+// AfterInsert if any. Throws ErrNonNewDocument if doc is a non-new document.
+func (s *EventsSaveFixtureStore) Insert(doc *EventsSaveFixture) error {
+	if err := s.BeforeSave(doc); err != nil {
+		return err
+	}
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return s.AfterSave(doc)
+}
+
+// Update update the given document on the collection, trigger BeforeUpdate and
+// AfterUpdate if any. Throws ErrNewDocument if doc is a new document.
+func (s *EventsSaveFixtureStore) Update(doc *EventsSaveFixture) error {
+	if err := s.BeforeSave(doc); err != nil {
+		return err
+	}
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return s.AfterSave(doc)
+}
+
+// Save insert or update the given document on the collection using Upsert,
+// trigger BeforeUpdate and AfterUpdate if the document is non-new and
+// BeforeInsert and AfterInset if is new.
+func (s *EventsSaveFixtureStore) Save(doc *EventsSaveFixture) (updated bool, err error) {
+	if err := s.BeforeSave(doc); err != nil {
+		return false, err
+	}
+
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	if err := s.AfterSave(doc); err != nil {
+		return false, err
+	}
+	return
+}
+
+type EventsSaveFixtureQuery struct {
+	storable.BaseQuery
+}
+
+// FindById add a new criteria to the query searching by _id
+func (q *EventsSaveFixtureQuery) FindById(ids ...bson.ObjectId) *EventsSaveFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type EventsSaveFixtureResultSet struct {
+	storable.ResultSet
+	last    *EventsSaveFixture
+	lastErr error
+}
+
+// All returns all documents on the resultset and close the resultset
+func (r *EventsSaveFixtureResultSet) All() ([]*EventsSaveFixture, error) {
+	var result []*EventsSaveFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+// One returns the first document on the resultset and close the resultset
+func (r *EventsSaveFixtureResultSet) One() (*EventsSaveFixture, error) {
+	var result *EventsSaveFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+// Next prepares the next result document for reading with the Get method.
+func (r *EventsSaveFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
+
+// Get returns the document retrieved with the Next method.
+func (r *EventsSaveFixtureResultSet) Get() (*EventsSaveFixture, error) {
+	return r.last, r.lastErr
+}
+
+// ForEach iterates the resultset calling to the given function.
+func (r *EventsSaveFixtureResultSet) ForEach(f func(*EventsSaveFixture) error) error {
+	for {
+		var result *EventsSaveFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type QueryFixtureStore struct {
 	storable.Store
 }
@@ -1075,6 +1261,7 @@ func (r *StoreWithConstructFixtureResultSet) ForEach(f func(*StoreWithConstructF
 
 type schema struct {
 	EventsFixture             *schemaEventsFixture
+	EventsSaveFixture         *schemaEventsSaveFixture
 	QueryFixture              *schemaQueryFixture
 	ResultSetFixture          *schemaResultSetFixture
 	SchemaFixture             *schemaSchemaFixture
@@ -1083,6 +1270,10 @@ type schema struct {
 }
 
 type schemaEventsFixture struct {
+	Checks storable.Map
+}
+
+type schemaEventsSaveFixture struct {
 	Checks storable.Map
 }
 
@@ -1133,6 +1324,9 @@ type schemaSchemaFixtureNestedMapOfSomeType struct {
 
 var Schema = schema{
 	EventsFixture: &schemaEventsFixture{
+		Checks: storable.NewMap("checks.[map]", "bool"),
+	},
+	EventsSaveFixture: &schemaEventsSaveFixture{
 		Checks: storable.NewMap("checks.[map]", "bool"),
 	},
 	QueryFixture: &schemaQueryFixture{

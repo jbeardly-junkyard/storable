@@ -67,8 +67,12 @@ func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
 // Insert insert the given document on the collection, trigger BeforeInsert and
 // AfterInsert if any. Throws ErrNonNewDocument if doc is a non-new document.
 func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
-		{{if .IsEventActive "BeforeInsert"}} \
+		{{if .Events.Has "BeforeInsert"}} \
 		if err := s.BeforeInsert(doc); err != nil {
+				return err
+		}
+		{{else if .Events.Has "BeforeSave"}} \
+		if err := s.BeforeSave(doc); err != nil {
 				return err
 		}
 		{{end}} \
@@ -78,8 +82,10 @@ func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
         return err
     }
 
-		{{if .IsEventActive "AfterInsert"}} \
+		{{if .Events.Has "AfterInsert"}} \
 		return s.AfterInsert(doc)
+		{{else if .Events.Has "AfterSave"}} \
+		return s.AfterSave(doc)
 		{{else}} \
     return nil
 		{{end}} \
@@ -88,8 +94,12 @@ func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
 // Update update the given document on the collection, trigger BeforeUpdate and
 // AfterUpdate if any. Throws ErrNewDocument if doc is a new document.
 func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
-		{{if .IsEventActive "BeforeUpdate"}} \
+		{{if .Events.Has "BeforeUpdate"}} \
 		if err := s.BeforeUpdate(doc); err != nil {
+				return err
+		}
+		{{else if .Events.Has "BeforeSave"}} \
+		if err := s.BeforeSave(doc); err != nil {
 				return err
 		}
 		{{end}} \
@@ -99,8 +109,10 @@ func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
         return err
     }
 
-		{{if .IsEventActive "AfterUpdate"}} \
+		{{if .Events.Has "AfterUpdate"}} \
 		return s.AfterUpdate(doc)
+		{{else if .Events.Has "AfterSave"}} \
+		return s.AfterSave(doc)
 		{{else}} \
     return nil
 		{{end}} \
@@ -110,15 +122,15 @@ func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
 // trigger BeforeUpdate and AfterUpdate if the document is non-new and
 // BeforeInsert and AfterInset if is new.
 func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
-		{{if or (.IsEventActive "BeforeUpdate") (.IsEventActive "BeforeInsert")}} \
+		{{if or (.Events.Has "BeforeUpdate") (.Events.Has "BeforeInsert")}} \
 		switch doc.IsNew() {
-		{{if .IsEventActive "BeforeInsert"}} \
+		{{if .Events.Has "BeforeInsert"}} \
 				case true:
 						if err := s.BeforeInsert(doc); err != nil {
 								return false, err
 						}
 		{{end}} \
-		{{if .IsEventActive "BeforeUpdate"}} \
+		{{if .Events.Has "BeforeUpdate"}} \
 				case false:
 						if err := s.BeforeUpdate(doc); err != nil {
 								return false, err
@@ -126,21 +138,26 @@ func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
 		{{end}} \
     }
 
+		{{else if .Events.Has "BeforeSave"}} \
+		if err := s.BeforeSave(doc); err != nil {
+				return false, err
+		}
+
 		{{end}} \
     updated, err = s.Store.Save(doc)
     if err != nil {
         return false, err
     }
 
-		{{if or (.IsEventActive "AfterUpdate") (.IsEventActive "AfterInsert")}} \
+		{{if or (.Events.Has "AfterUpdate") (.Events.Has "AfterInsert")}} \
 		switch updated {
-		{{if .IsEventActive "AfterInsert"}} \
+		{{if .Events.Has "AfterInsert"}} \
 				case false:
 						if err := s.AfterInsert(doc); err != nil {
 								return false, err
 						}
 		{{end}} \
-		{{if .IsEventActive "AfterUpdate"}} \
+		{{if .Events.Has "AfterUpdate"}} \
 				case true:
 						if err := s.AfterUpdate(doc); err != nil {
 								return false, err
@@ -148,9 +165,13 @@ func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
 		{{end}} \
 		}
 
-		{{end}} \
-		    return
+		{{else if .Events.Has "AfterSave"}} \
+		if err := s.AfterSave(doc); err != nil {
+				return false, err
 		}
+		{{end}} \
+		return
+}
 
 {{template "query" .}}
 

@@ -142,12 +142,17 @@ func (p *Processor) processPackage(pkg *Package) {
 
 		if m := p.processStruct(name, str); m != nil {
 			fmt.Printf("Found: %s\n", m)
+			if err := m.Validate(); err != nil {
+				panic(err)
+			}
+
 			pkg.Models = append(pkg.Models, m)
 			m.CheckedNode = s.Lookup(name).Type().(*types.Named)
 			m.Package = p.TypesPkg
 		} else {
 			pkg.Structs = append(pkg.Structs, name)
 		}
+
 	}
 
 	for _, fun := range newFuncs {
@@ -227,7 +232,10 @@ func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 func (p *Processor) getEvents(name string) []Event {
 	events := []Event{}
 
-	all := []Event{BeforeInsert, AfterInsert, BeforeUpdate, AfterUpdate}
+	all := []Event{
+		BeforeInsert, AfterInsert, BeforeUpdate, AfterUpdate, BeforeSave, AfterSave,
+	}
+
 	for _, e := range all {
 		if p.isEventPresent(name, e) {
 			events = append(events, e)

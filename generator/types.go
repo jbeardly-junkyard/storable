@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -72,7 +73,7 @@ type Model struct {
 	Collection  string
 	Type        string
 	Fields      []*Field
-	Events      []Event
+	Events      Events
 	CheckedNode *types.Named
 	NewFunc     *types.Func
 	Package     *types.Package
@@ -91,17 +92,12 @@ func NewModel(n string) *Model {
 }
 
 func (m *Model) String() string {
-	var fields []string
-	for _, f := range m.Fields {
-		fields = append(fields, f.String())
-	}
-
 	var events []string
 	for _, e := range m.Events {
-		events = append(fields, string(e))
+		events = append(events, string(e))
 	}
 
-	return fmt.Sprintf("%q [Fields: %s] [Events: %s]", m.Name, fields, events)
+	return fmt.Sprintf("%q [%d Field(s)] [Events: %s]", m.Name, len(m.Fields), events)
 }
 
 func (m *Model) ValidFields() []*Field {
@@ -113,6 +109,32 @@ func (m *Model) ValidFields() []*Field {
 	}
 
 	return fields
+}
+
+var (
+	ErrEventConflict = errors.New(
+		"Event conflict a *Save and a *Update or *Insert are present",
+	)
+)
+
+func (m *Model) Validate() error {
+	if m.Events.Has(BeforeSave) && m.Events.Has(BeforeInsert) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(BeforeSave) && m.Events.Has(BeforeUpdate) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(AfterSave) && m.Events.Has(AfterInsert) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(AfterSave) && m.Events.Has(AfterUpdate) {
+		return ErrEventConflict
+	}
+
+	return nil
 }
 
 func (m *Model) NewArgs() string {
@@ -216,16 +238,6 @@ func (m *Model) NewRetVars() string {
 	}
 
 	return strings.Join(ret, ", ")
-}
-
-func (m *Model) IsEventActive(expected Event) bool {
-	for _, e := range m.Events {
-		if e == expected {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (m *Model) isStore(typ types.Type) bool {
@@ -419,9 +431,23 @@ func isBuiltinError(typ types.Type) bool {
 
 type Event string
 
+type Events []Event
+
+func (s Events) Has(e Event) bool {
+	for _, event := range s {
+		if event == e {
+			return true
+		}
+	}
+
+	return false
+}
+
 const (
 	BeforeInsert Event = "BeforeInsert"
 	AfterInsert  Event = "AfterInsert"
 	BeforeUpdate Event = "BeforeUpdate"
 	AfterUpdate  Event = "AfterUpdate"
+	BeforeSave   Event = "BeforeSave"
+	AfterSave    Event = "AfterSave"
 )

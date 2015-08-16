@@ -50,3 +50,34 @@ func (s *EventsFixtureStore) AfterUpdate(doc *EventsFixture) error {
 	doc.Checks["AfterUpdate"] = true
 	return nil
 }
+
+type EventsSaveFixture struct {
+	storable.Document `bson:",inline" collection:"event"`
+	Checks            map[string]bool
+	MustFailBefore    error
+	MustFailAfter     error
+}
+
+func newEventsSaveFixture() *EventsSaveFixture {
+	return &EventsSaveFixture{
+		Checks: make(map[string]bool, 0),
+	}
+}
+
+func (s *EventsSaveFixtureStore) BeforeSave(doc *EventsSaveFixture) error {
+	if doc.MustFailBefore != nil {
+		return doc.MustFailBefore
+	}
+
+	doc.Checks["BeforeSave"] = true
+	return nil
+}
+
+func (s *EventsSaveFixtureStore) AfterSave(doc *EventsSaveFixture) error {
+	if doc.MustFailAfter != nil {
+		return doc.MustFailAfter
+	}
+
+	doc.Checks["AfterSave"] = true
+	return nil
+}
