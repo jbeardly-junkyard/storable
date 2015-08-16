@@ -49,14 +49,7 @@ func (p *Processor) Do() (*Package, error) {
 	}
 
 	p.TypesPkg, _ = p.parseSourceFiles(files)
-	return p.ProcessTypesPkg()
-}
-
-func (p *Processor) ProcessTypesPkg() (*Package, error) {
-	pkg := &Package{Name: p.TypesPkg.Name()}
-	p.processPackage(pkg)
-
-	return pkg, nil
+	return p.processTypesPkg()
 }
 
 func (p *Processor) getSourceFiles() ([]string, error) {
@@ -121,9 +114,17 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 	return config.Check(p.Path, fs, files, info)
 }
 
+func (p *Processor) processTypesPkg() (*Package, error) {
+	pkg := &Package{Name: p.TypesPkg.Name()}
+	p.processPackage(pkg)
+
+	return pkg, nil
+}
+
 func (p *Processor) processPackage(pkg *Package) {
 	var newFuncs []*types.Func
 
+	fmt.Println("Package: ", pkg.Name)
 	s := p.TypesPkg.Scope()
 	for _, name := range s.Names() {
 		fun := p.tryGetFunction(s.Lookup(name))
@@ -140,6 +141,7 @@ func (p *Processor) processPackage(pkg *Package) {
 		}
 
 		if m := p.processStruct(name, str); m != nil {
+			fmt.Printf("Found: %s\n", m)
 			pkg.Models = append(pkg.Models, m)
 			m.CheckedNode = s.Lookup(name).Type().(*types.Named)
 			m.Package = p.TypesPkg

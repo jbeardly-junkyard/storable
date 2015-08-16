@@ -96,7 +96,7 @@ func (s *ProcessorSuite) processFixture(source string) *Package {
 
 	prc := NewProcessor("fixture", nil)
 	prc.TypesPkg = p
-	pkg, err := prc.ProcessTypesPkg()
+	pkg, err := prc.processTypesPkg()
 	if err != nil {
 		panic(err)
 	}

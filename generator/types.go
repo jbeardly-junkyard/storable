@@ -91,19 +91,21 @@ func NewModel(n string) *Model {
 }
 
 func (m *Model) String() string {
-	fields := make([]string, 0)
+	var fields []string
 	for _, f := range m.Fields {
-		fields = append(fields, "\t"+f.String()+"\n")
+		fields = append(fields, f.String())
 	}
 
-	fieldsStr := strings.Join(fields, "")
-	str := fmt.Sprintf("(Model '%s' [\n %s]", m.Name, fieldsStr)
+	var events []string
+	for _, e := range m.Events {
+		events = append(fields, string(e))
+	}
 
-	return str
+	return fmt.Sprintf("%q [Fields: %s] [Events: %s]", m.Name, fields, events)
 }
 
 func (m *Model) ValidFields() []*Field {
-	fields := make([]*Field, 0)
+	var fields []*Field
 	for _, f := range m.Fields {
 		if f.Findable() {
 			fields = append(fields, f)
@@ -361,21 +363,7 @@ func (f *Field) Findable() bool {
 }
 
 func (f *Field) String() string {
-	return f.toString(0)
-}
-
-func (f *Field) toString(l int) string {
-	if l > 3 {
-		return "... more depth ..."
-	}
-	fields := make([]string, 0)
-	for _, f := range f.Fields {
-		fields = append(fields, f.toString(l+1))
-	}
-
-	fieldsStr := strings.Join(fields, ", ")
-
-	return fmt.Sprintf("%s %s %s [%s]", f.Name, f.Type, f.Tag, fieldsStr)
+	return f.Name
 }
 
 func reverseSliceStrings(input []string) []string {
