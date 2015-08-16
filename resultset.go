@@ -60,6 +60,10 @@ func (r *ResultSet) Next(doc interface{}) (bool, error) {
 	}
 
 	returned := r.mgoIter.Next(doc)
+	if !returned {
+		r.Close()
+	}
+
 	return returned, r.mgoIter.Err()
 }
 

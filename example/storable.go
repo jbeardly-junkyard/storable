@@ -34,7 +34,7 @@ func (s *ProductStore) Find(query *ProductQuery) (*ProductResultSet, error) {
 		return nil, err
 	}
 
-	return &ProductResultSet{*resultSet}, nil
+	return &ProductResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *ProductStore) MustFind(query *ProductQuery) *ProductResultSet {
@@ -109,6 +109,8 @@ func (q *ProductQuery) FindById(ids ...bson.ObjectId) *ProductQuery {
 
 type ProductResultSet struct {
 	storable.ResultSet
+	last    *Product
+	lastErr error
 }
 
 func (r *ProductResultSet) All() ([]*Product, error) {
@@ -125,11 +127,14 @@ func (r *ProductResultSet) One() (*Product, error) {
 	return result, err
 }
 
-func (r *ProductResultSet) Next() (*Product, error) {
-	var result *Product
-	_, err := r.ResultSet.Next(&result)
+func (r *ProductResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *ProductResultSet) Get() (*Product, error) {
+	return r.last, r.lastErr
 }
 
 func (r *ProductResultSet) ForEach(f func(*Product) error) error {

@@ -10,6 +10,7 @@ func New{{.StoreName}}(db *mgo.Database) *{{.StoreName}} {
 }
 {{end}}
 
+// New returns a new instance of {{.Name}}.
 func (s *{{.StoreName}}) New({{.NewArgs}}) {{.NewReturns}} {
 	{{.NewRetVars}} = {{if .NewFunc}}{{.NewFunc.Name}}({{.NewArgVars}}){{else}}&{{.Name}}{}{{end}}
     doc.SetIsNew(true)
@@ -17,19 +18,22 @@ func (s *{{.StoreName}}) New({{.NewArgs}}) {{.NewReturns}} {
     return
 }
 
+// Query return a new instance of {{.QueryName}}.
 func (s *{{.StoreName}}) Query() *{{.QueryName}} {
     return &{{.QueryName}}{*storable.NewBaseQuery()}
 }
 
+// Find performs a find on the collection using the given query.
 func (s *{{.StoreName}}) Find(query *{{.QueryName}}) (*{{.ResultSetName}}, error) {
     resultSet, err := s.Store.Find(query)
     if err != nil {
         return nil, err
     }
 
-    return &{{.ResultSetName}}{*resultSet}, nil
+    return &{{.ResultSetName}}{ResultSet: *resultSet}, nil
 }
 
+// MustFind like Find but panics on error
 func (s *{{.StoreName}}) MustFind(query *{{.QueryName}}) *{{.ResultSetName}} {
     resultSet, err := s.Find(query)
     if err != nil {
@@ -39,6 +43,8 @@ func (s *{{.StoreName}}) MustFind(query *{{.QueryName}}) *{{.ResultSetName}} {
     return resultSet
 }
 
+// FindOne performs a find on the collection using the given query returning
+// the first document from the resultset.
 func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     resultSet, err := s.Find(query)
     if err != nil {
@@ -48,6 +54,7 @@ func (s *{{.StoreName}}) FindOne(query *{{.QueryName}}) (*{{.Name}}, error) {
     return resultSet.One()
 }
 
+// MustFindOne like FindOne but panics on error
 func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
     doc, err := s.FindOne(query)
     if err != nil {
@@ -57,6 +64,8 @@ func (s *{{.StoreName}}) MustFindOne(query *{{.QueryName}}) *{{.Name}} {
     return doc
 }
 
+// Insert insert the given document on the collection, trigger BeforeInsert and
+// AfterInsert if any. Throws ErrNonNewDocument if doc is a non-new document.
 func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
 		{{if .IsEventActive "BeforeInsert"}} \
 		if err := s.BeforeInsert(doc); err != nil {
@@ -76,6 +85,8 @@ func (s *{{.StoreName}}) Insert(doc *{{.Name}}) error {
 		{{end}} \
 }
 
+// Update update the given document on the collection, trigger BeforeUpdate and
+// AfterUpdate if any. Throws ErrNewDocument if doc is a new document.
 func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
 		{{if .IsEventActive "BeforeUpdate"}} \
 		if err := s.BeforeUpdate(doc); err != nil {
@@ -95,6 +106,9 @@ func (s *{{.StoreName}}) Update(doc *{{.Name}}) error {
 		{{end}} \
 }
 
+// Save insert or update the given document on the collection using Upsert,
+// trigger BeforeUpdate and AfterUpdate if the document is non-new and
+// BeforeInsert and AfterInset if is new.
 func (s *{{.StoreName}}) Save(doc *{{.Name}}) (updated bool, err error) {
 		{{if or (.IsEventActive "BeforeUpdate") (.IsEventActive "BeforeInsert")}} \
 		switch doc.IsNew() {

@@ -26,16 +26,33 @@ func (s *MongoSuite) TestResultSetOne(c *C) {
 	c.Assert(doc.Foo, Equals, "bar")
 }
 
+func (s *MongoSuite) TestResultSetNextEmpty(c *C) {
+	store := NewResultSetFixtureStore(s.db)
+	rs := store.MustFind(store.Query())
+	returned := rs.Next()
+	c.Assert(returned, Equals, false)
+
+	doc, err := rs.Get()
+	c.Assert(err, IsNil)
+	c.Assert(doc, IsNil)
+}
+
 func (s *MongoSuite) TestResultSetNext(c *C) {
 	store := NewResultSetFixtureStore(s.db)
 	c.Assert(store.Insert(store.New("bar")), IsNil)
 
 	rs := store.MustFind(store.Query())
-	doc, err := rs.Next()
+	returned := rs.Next()
+	c.Assert(returned, Equals, true)
+
+	doc, err := rs.Get()
 	c.Assert(err, IsNil)
 	c.Assert(doc.Foo, Equals, "bar")
 
-	doc, err = rs.Next()
+	returned = rs.Next()
+	c.Assert(returned, Equals, false)
+
+	doc, err = rs.Get()
 	c.Assert(err, IsNil)
 	c.Assert(doc, IsNil)
 }

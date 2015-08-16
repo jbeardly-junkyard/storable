@@ -3,6 +3,7 @@ type {{.QueryName}} struct {
 	storable.BaseQuery
 }
 
+// FindById add a new criteria to the query searching by _id
 func (q *{{.QueryName}}) FindById(ids ...bson.ObjectId) *{{.QueryName}} {
 	var vs []interface{}
 	for _, id := range ids {

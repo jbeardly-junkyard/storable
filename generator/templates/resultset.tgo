@@ -1,8 +1,11 @@
 
 type {{.ResultSetName}} struct {
     storable.ResultSet
+    last    *{{.Name}}
+    lastErr error
 }
 
+// All returns all documents on the resultset and close the resultset
 func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     var result []*{{.Name}}
     err := r.ResultSet.All(&result)
@@ -10,6 +13,7 @@ func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     return result, err
 }
 
+// One returns the first document on the resultset and close the resultset
 func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
     var result *{{.Name}}
     err := r.ResultSet.One(&result)
@@ -17,13 +21,19 @@ func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
     return result, err
 }
 
-func (r *{{.ResultSetName}}) Next() (*{{.Name}}, error) {
-    var result *{{.Name}}
-    _, err := r.ResultSet.Next(&result)
-
-    return result, err
+// Next prepares the next result document for reading with the Get method.
+func (r *{{.ResultSetName}}) Next() (returned bool) {
+    r.last = nil
+    returned, r.lastErr = r.ResultSet.Next(&r.last)
+    return
 }
 
+// Get returns the document retrieved with the Next method.
+func (r *{{.ResultSetName}}) Get() (*{{.Name}}, error) {
+    return r.last, r.lastErr
+}
+
+// ForEach iterates the resultset calling to the given function.
 func (r *{{.ResultSetName}}) ForEach(f func(*{{.Name}}) error) error {
     for {
         var result *{{.Name}}

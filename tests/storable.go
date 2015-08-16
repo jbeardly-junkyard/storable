@@ -32,7 +32,7 @@ func (s *EventsFixtureStore) Find(query *EventsFixtureQuery) (*EventsFixtureResu
 		return nil, err
 	}
 
-	return &EventsFixtureResultSet{*resultSet}, nil
+	return &EventsFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *EventsFixtureStore) MustFind(query *EventsFixtureQuery) *EventsFixtureResultSet {
@@ -135,6 +135,8 @@ func (q *EventsFixtureQuery) FindById(ids ...bson.ObjectId) *EventsFixtureQuery 
 
 type EventsFixtureResultSet struct {
 	storable.ResultSet
+	last    *EventsFixture
+	lastErr error
 }
 
 func (r *EventsFixtureResultSet) All() ([]*EventsFixture, error) {
@@ -151,11 +153,14 @@ func (r *EventsFixtureResultSet) One() (*EventsFixture, error) {
 	return result, err
 }
 
-func (r *EventsFixtureResultSet) Next() (*EventsFixture, error) {
-	var result *EventsFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *EventsFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *EventsFixtureResultSet) Get() (*EventsFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *EventsFixtureResultSet) ForEach(f func(*EventsFixture) error) error {
@@ -208,7 +213,7 @@ func (s *QueryFixtureStore) Find(query *QueryFixtureQuery) (*QueryFixtureResultS
 		return nil, err
 	}
 
-	return &QueryFixtureResultSet{*resultSet}, nil
+	return &QueryFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *QueryFixtureStore) MustFind(query *QueryFixtureQuery) *QueryFixtureResultSet {
@@ -283,6 +288,8 @@ func (q *QueryFixtureQuery) FindById(ids ...bson.ObjectId) *QueryFixtureQuery {
 
 type QueryFixtureResultSet struct {
 	storable.ResultSet
+	last    *QueryFixture
+	lastErr error
 }
 
 func (r *QueryFixtureResultSet) All() ([]*QueryFixture, error) {
@@ -299,11 +306,14 @@ func (r *QueryFixtureResultSet) One() (*QueryFixture, error) {
 	return result, err
 }
 
-func (r *QueryFixtureResultSet) Next() (*QueryFixture, error) {
-	var result *QueryFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *QueryFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *QueryFixtureResultSet) Get() (*QueryFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *QueryFixtureResultSet) ForEach(f func(*QueryFixture) error) error {
@@ -356,7 +366,7 @@ func (s *ResultSetFixtureStore) Find(query *ResultSetFixtureQuery) (*ResultSetFi
 		return nil, err
 	}
 
-	return &ResultSetFixtureResultSet{*resultSet}, nil
+	return &ResultSetFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *ResultSetFixtureStore) MustFind(query *ResultSetFixtureQuery) *ResultSetFixtureResultSet {
@@ -431,6 +441,8 @@ func (q *ResultSetFixtureQuery) FindById(ids ...bson.ObjectId) *ResultSetFixture
 
 type ResultSetFixtureResultSet struct {
 	storable.ResultSet
+	last    *ResultSetFixture
+	lastErr error
 }
 
 func (r *ResultSetFixtureResultSet) All() ([]*ResultSetFixture, error) {
@@ -447,11 +459,14 @@ func (r *ResultSetFixtureResultSet) One() (*ResultSetFixture, error) {
 	return result, err
 }
 
-func (r *ResultSetFixtureResultSet) Next() (*ResultSetFixture, error) {
-	var result *ResultSetFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *ResultSetFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *ResultSetFixtureResultSet) Get() (*ResultSetFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *ResultSetFixtureResultSet) ForEach(f func(*ResultSetFixture) error) error {
@@ -504,7 +519,7 @@ func (s *SchemaFixtureStore) Find(query *SchemaFixtureQuery) (*SchemaFixtureResu
 		return nil, err
 	}
 
-	return &SchemaFixtureResultSet{*resultSet}, nil
+	return &SchemaFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *SchemaFixtureStore) MustFind(query *SchemaFixtureQuery) *SchemaFixtureResultSet {
@@ -579,6 +594,8 @@ func (q *SchemaFixtureQuery) FindById(ids ...bson.ObjectId) *SchemaFixtureQuery 
 
 type SchemaFixtureResultSet struct {
 	storable.ResultSet
+	last    *SchemaFixture
+	lastErr error
 }
 
 func (r *SchemaFixtureResultSet) All() ([]*SchemaFixture, error) {
@@ -595,11 +612,14 @@ func (r *SchemaFixtureResultSet) One() (*SchemaFixture, error) {
 	return result, err
 }
 
-func (r *SchemaFixtureResultSet) Next() (*SchemaFixture, error) {
-	var result *SchemaFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *SchemaFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *SchemaFixtureResultSet) Get() (*SchemaFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *SchemaFixtureResultSet) ForEach(f func(*SchemaFixture) error) error {
@@ -652,7 +672,7 @@ func (s *StoreFixtureStore) Find(query *StoreFixtureQuery) (*StoreFixtureResultS
 		return nil, err
 	}
 
-	return &StoreFixtureResultSet{*resultSet}, nil
+	return &StoreFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *StoreFixtureStore) MustFind(query *StoreFixtureQuery) *StoreFixtureResultSet {
@@ -727,6 +747,8 @@ func (q *StoreFixtureQuery) FindById(ids ...bson.ObjectId) *StoreFixtureQuery {
 
 type StoreFixtureResultSet struct {
 	storable.ResultSet
+	last    *StoreFixture
+	lastErr error
 }
 
 func (r *StoreFixtureResultSet) All() ([]*StoreFixture, error) {
@@ -743,11 +765,14 @@ func (r *StoreFixtureResultSet) One() (*StoreFixture, error) {
 	return result, err
 }
 
-func (r *StoreFixtureResultSet) Next() (*StoreFixture, error) {
-	var result *StoreFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *StoreFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *StoreFixtureResultSet) Get() (*StoreFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *StoreFixtureResultSet) ForEach(f func(*StoreFixture) error) error {
@@ -800,7 +825,7 @@ func (s *StoreWithConstructFixtureStore) Find(query *StoreWithConstructFixtureQu
 		return nil, err
 	}
 
-	return &StoreWithConstructFixtureResultSet{*resultSet}, nil
+	return &StoreWithConstructFixtureResultSet{ResultSet: *resultSet}, nil
 }
 
 func (s *StoreWithConstructFixtureStore) MustFind(query *StoreWithConstructFixtureQuery) *StoreWithConstructFixtureResultSet {
@@ -875,6 +900,8 @@ func (q *StoreWithConstructFixtureQuery) FindById(ids ...bson.ObjectId) *StoreWi
 
 type StoreWithConstructFixtureResultSet struct {
 	storable.ResultSet
+	last    *StoreWithConstructFixture
+	lastErr error
 }
 
 func (r *StoreWithConstructFixtureResultSet) All() ([]*StoreWithConstructFixture, error) {
@@ -891,11 +918,14 @@ func (r *StoreWithConstructFixtureResultSet) One() (*StoreWithConstructFixture, 
 	return result, err
 }
 
-func (r *StoreWithConstructFixtureResultSet) Next() (*StoreWithConstructFixture, error) {
-	var result *StoreWithConstructFixture
-	_, err := r.ResultSet.Next(&result)
+func (r *StoreWithConstructFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
 
-	return result, err
+func (r *StoreWithConstructFixtureResultSet) Get() (*StoreWithConstructFixture, error) {
+	return r.last, r.lastErr
 }
 
 func (r *StoreWithConstructFixtureResultSet) ForEach(f func(*StoreWithConstructFixture) error) error {
