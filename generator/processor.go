@@ -6,8 +6,10 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 
 	_ "golang.org/x/tools/go/gcimporter"
@@ -17,10 +19,10 @@ import (
 const BaseDocument = "github.com/tyba/storable.Document"
 
 type Processor struct {
-	Path   string
-	Ignore map[string]bool
-
-	TypesPkg *types.Package
+	Path       string
+	Ignore     map[string]bool
+	TypesPkg   *types.Package
+	SourceCode map[string][]byte
 }
 
 func NewProcessor(path string, ignore []string) *Processor {
@@ -41,15 +43,13 @@ func (p *Processor) Do() (*Package, error) {
 		return nil, err
 	}
 
+	p.SourceCode, err = p.readSourceFiles(files)
+	if err != nil {
+		return nil, err
+	}
+
 	p.TypesPkg, _ = p.parseSourceFiles(files)
-	return p.ProcessTypesPkg()
-}
-
-func (p *Processor) ProcessTypesPkg() (*Package, error) {
-	pkg := &Package{Name: p.TypesPkg.Name()}
-	p.processPackage(pkg)
-
-	return pkg, nil
+	return p.processTypesPkg()
 }
 
 func (p *Processor) getSourceFiles() ([]string, error) {
@@ -66,17 +66,40 @@ func (p *Processor) getSourceFiles() ([]string, error) {
 		return nil, fmt.Errorf("%s: no buildable Go files", p.Path)
 	}
 
-	return joinDirectory(p.Path, files), nil
+	return joinDirectory(p.Path, p.removeIngoredFiles(files)), nil
+}
+
+func (p *Processor) removeIngoredFiles(filenames []string) []string {
+	var output []string
+	for _, filename := range filenames {
+		if _, ok := p.Ignore[filename]; ok {
+			continue
+		}
+
+		output = append(output, filename)
+	}
+
+	return output
+}
+
+func (p *Processor) readSourceFiles(filenames []string) (map[string][]byte, error) {
+	source := make(map[string][]byte, 0)
+	for _, filename := range filenames {
+		b, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return source, err
+		}
+
+		source[filename] = b
+	}
+
+	return source, nil
 }
 
 func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error) {
 	var files []*ast.File
 	fs := token.NewFileSet()
 	for _, filename := range filenames {
-		if _, ok := p.Ignore[filename]; ok {
-			continue
-		}
-
 		file, err := parser.ParseFile(fs, filename, nil, 0)
 		if err != nil {
 			return nil, fmt.Errorf("parsing package: %s: %s", filename, err)
@@ -91,9 +114,17 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 	return config.Check(p.Path, fs, files, info)
 }
 
+func (p *Processor) processTypesPkg() (*Package, error) {
+	pkg := &Package{Name: p.TypesPkg.Name()}
+	p.processPackage(pkg)
+
+	return pkg, nil
+}
+
 func (p *Processor) processPackage(pkg *Package) {
 	var newFuncs []*types.Func
 
+	fmt.Println("Package: ", pkg.Name)
 	s := p.TypesPkg.Scope()
 	for _, name := range s.Names() {
 		fun := p.tryGetFunction(s.Lookup(name))
@@ -110,12 +141,18 @@ func (p *Processor) processPackage(pkg *Package) {
 		}
 
 		if m := p.processStruct(name, str); m != nil {
+			fmt.Printf("Found: %s\n", m)
+			if err := m.Validate(); err != nil {
+				panic(err)
+			}
+
 			pkg.Models = append(pkg.Models, m)
 			m.CheckedNode = s.Lookup(name).Type().(*types.Named)
 			m.Package = p.TypesPkg
 		} else {
 			pkg.Structs = append(pkg.Structs, name)
 		}
+
 	}
 
 	for _, fun := range newFuncs {
@@ -175,6 +212,7 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 
 func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	m := NewModel(name)
+	m.Events = p.getEvents(name)
 
 	var base int
 	if base, m.Fields = p.getFields(s); base == -1 {
@@ -182,8 +220,6 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	}
 
 	p.procesBaseField(m, m.Fields[base])
-	p.findHooks(m)
-	p.findStoreHooks(m)
 
 	return m
 }
@@ -191,6 +227,34 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 func (p *Processor) getFields(s *types.Struct) (base int, fields []*Field) {
 	base, fields = p.processFields(s, []*types.Struct{})
 	return
+}
+
+func (p *Processor) getEvents(name string) []Event {
+	events := []Event{}
+
+	all := []Event{
+		BeforeInsert, AfterInsert, BeforeUpdate, AfterUpdate, BeforeSave, AfterSave,
+	}
+
+	for _, e := range all {
+		if p.isEventPresent(name, e) {
+			events = append(events, e)
+		}
+	}
+
+	return events
+}
+
+func (p *Processor) isEventPresent(name string, e Event) bool {
+	re := regexp.MustCompile(fmt.Sprintf("\\*%sStore\\) %s\\(", name, e))
+
+	for _, code := range p.SourceCode {
+		if re.Match(code) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Returns which field index is an embedded storable.Document, or -1 if none.
@@ -256,134 +320,4 @@ func joinDirectory(directory string, files []string) []string {
 	}
 
 	return r
-}
-
-func (p *Processor) findHooks(m *Model) {
-	modelType := types.NewPointer(p.TypesPkg.Scope().Lookup(m.Name).Type())
-	m.Hooks = p.hookMethods(modelType, nil)
-
-	for _, f := range m.Fields {
-		p.findFieldHooks(f, []interface{}{modelType})
-	}
-}
-
-func (p *Processor) findFieldHooks(f *Field, done []interface{}) {
-	if f.CheckedNode == nil {
-		return
-	}
-
-	for _, v := range done {
-		if v == f.CheckedNode.Type() {
-			return
-		}
-	}
-
-	typ := f.CheckedNode.Type()
-out:
-	for {
-		switch v := typ.(type) {
-		case *types.Slice:
-			typ = v.Elem()
-		case *types.Map:
-			typ = v.Elem()
-		default:
-			break out
-		}
-	}
-
-	if _, ok := typ.(*types.Pointer); !ok {
-		typ = types.NewPointer(typ)
-	}
-
-	f.Hooks = p.hookMethods(typ, nil)
-
-	for _, f := range f.Fields {
-		p.findFieldHooks(f, append(done, f.CheckedNode.Type()))
-	}
-}
-
-func (p *Processor) hookMethods(t types.Type, storeOf *Model) []Hook {
-	var hooks []Hook
-
-	ms := types.NewMethodSet(t)
-
-	actions := []HookAction{
-		InsertHook,
-		UpdateHook,
-		SaveHook,
-	}
-
-	for _, action := range actions {
-		hook := Hook{Before: false, Action: action}
-		if p.hasHookMethod(ms, hook.MethodName(), storeOf) {
-			hooks = append(hooks, hook)
-		}
-		hook.Before = true
-		if p.hasHookMethod(ms, hook.MethodName(), storeOf) {
-			hooks = append(hooks, hook)
-		}
-	}
-
-	return hooks
-}
-
-func (p *Processor) hasHookMethod(ms *types.MethodSet, methodName string, storeOf *Model) bool {
-	sel := ms.Lookup(p.TypesPkg, methodName)
-	if sel == nil {
-		return false
-	}
-	method, ok := sel.Obj().(*types.Func)
-	if !ok {
-		return false
-	}
-	sig, ok := method.Type().(*types.Signature)
-	if !ok {
-		return false
-	}
-
-	params := sig.Params()
-	if storeOf != nil {
-		if params == nil || params.Len() != 1 {
-			return false
-		}
-		ty, ok := params.At(0).Type().(*types.Pointer)
-		if !ok {
-			return false
-		}
-		named, ok := ty.Elem().(*types.Named)
-		if ok {
-			if named.Obj().Name() != storeOf.Name+"Store" {
-				return false
-			}
-		} else {
-			if ty.Elem() != types.Typ[types.Invalid] {
-				return false
-			}
-		}
-	} else {
-		if params != nil && params.Len() > 0 {
-			return false
-		}
-	}
-
-	ret := sig.Results()
-	if ret == nil || ret.Len() != 1 || !isBuiltinError(ret.At(0).Type()) {
-		return false
-	}
-
-	return true
-}
-
-func (p *Processor) findStoreHooks(m *Model) {
-	modelType := types.NewPointer(p.TypesPkg.Scope().Lookup(m.Name).Type())
-	m.StoreHooks = p.hookMethods(modelType, m)
-}
-
-func isBuiltinError(typ types.Type) bool {
-	named, ok := typ.(*types.Named)
-	if !ok {
-		return false
-	}
-
-	return named.Obj().Name() == "error" && named.Obj().Parent() == types.Universe
 }

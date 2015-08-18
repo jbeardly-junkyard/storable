@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -72,12 +73,10 @@ type Model struct {
 	Collection  string
 	Type        string
 	Fields      []*Field
+	Events      Events
 	CheckedNode *types.Named
 	NewFunc     *types.Func
 	Package     *types.Package
-
-	Hooks      []Hook
-	StoreHooks []Hook
 }
 
 func NewModel(n string) *Model {
@@ -88,23 +87,21 @@ func NewModel(n string) *Model {
 		ResultSetName: fmt.Sprintf(ResultSetNamePattern, n),
 		Type:          "struct",
 		Fields:        make([]*Field, 0),
+		Events:        make([]Event, 0),
 	}
 }
 
 func (m *Model) String() string {
-	fields := make([]string, 0)
-	for _, f := range m.Fields {
-		fields = append(fields, "\t"+f.String()+"\n")
+	var events []string
+	for _, e := range m.Events {
+		events = append(events, string(e))
 	}
 
-	fieldsStr := strings.Join(fields, "")
-	str := fmt.Sprintf("(Model '%s' [\n %s]", m.Name, fieldsStr)
-
-	return str
+	return fmt.Sprintf("%q [%d Field(s)] [Events: %s]", m.Name, len(m.Fields), events)
 }
 
 func (m *Model) ValidFields() []*Field {
-	fields := make([]*Field, 0)
+	var fields []*Field
 	for _, f := range m.Fields {
 		if f.Findable() {
 			fields = append(fields, f)
@@ -112,6 +109,32 @@ func (m *Model) ValidFields() []*Field {
 	}
 
 	return fields
+}
+
+var (
+	ErrEventConflict = errors.New(
+		"Event conflict a *Save and a *Update or *Insert are present",
+	)
+)
+
+func (m *Model) Validate() error {
+	if m.Events.Has(BeforeSave) && m.Events.Has(BeforeInsert) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(BeforeSave) && m.Events.Has(BeforeUpdate) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(AfterSave) && m.Events.Has(AfterInsert) {
+		return ErrEventConflict
+	}
+
+	if m.Events.Has(AfterSave) && m.Events.Has(AfterUpdate) {
+		return ErrEventConflict
+	}
+
+	return nil
 }
 
 func (m *Model) NewArgs() string {
@@ -245,7 +268,6 @@ type Field struct {
 	Fields      []*Field
 	Parent      *Field
 	isMap       bool
-	Hooks       []Hook
 }
 
 func NewField(n, t string, tag reflect.StructTag) *Field {
@@ -353,21 +375,7 @@ func (f *Field) Findable() bool {
 }
 
 func (f *Field) String() string {
-	return f.toString(0)
-}
-
-func (f *Field) toString(l int) string {
-	if l > 3 {
-		return "... more depth ..."
-	}
-	fields := make([]string, 0)
-	for _, f := range f.Fields {
-		fields = append(fields, f.toString(l+1))
-	}
-
-	fieldsStr := strings.Join(fields, ", ")
-
-	return fmt.Sprintf("%s %s %s [%s]", f.Name, f.Type, f.Tag, fieldsStr)
+	return f.Name
 }
 
 func reverseSliceStrings(input []string) []string {
@@ -377,33 +385,6 @@ func reverseSliceStrings(input []string) []string {
 
 	return append(reverseSliceStrings(input[1:]), input[0])
 }
-
-type Hook struct {
-	Before bool
-	Action HookAction
-}
-
-func (h Hook) MethodName() string {
-	var ret string
-
-	if h.Before {
-		ret += "Before"
-	} else {
-		ret += "After"
-	}
-
-	ret += string(h.Action)
-
-	return ret
-}
-
-type HookAction string
-
-const (
-	InsertHook HookAction = "Insert"
-	UpdateHook HookAction = "Update"
-	SaveHook   HookAction = "Save"
-)
 
 func isTypeOrPtrTo(ptr types.Type, named *types.Named) bool {
 	switch ty := ptr.(type) {
@@ -438,3 +419,35 @@ func isPtrToInvalid(ty types.Type) bool {
 	ptrTo, ok := ty.(*types.Pointer)
 	return ok && ptrTo.Elem() == types.Typ[types.Invalid]
 }
+
+func isBuiltinError(typ types.Type) bool {
+	named, ok := typ.(*types.Named)
+	if !ok {
+		return false
+	}
+
+	return named.Obj().Name() == "error" && named.Obj().Parent() == types.Universe
+}
+
+type Event string
+
+type Events []Event
+
+func (s Events) Has(e Event) bool {
+	for _, event := range s {
+		if event == e {
+			return true
+		}
+	}
+
+	return false
+}
+
+const (
+	BeforeInsert Event = "BeforeInsert"
+	AfterInsert  Event = "AfterInsert"
+	BeforeUpdate Event = "BeforeUpdate"
+	AfterUpdate  Event = "AfterUpdate"
+	BeforeSave   Event = "BeforeSave"
+	AfterSave    Event = "AfterSave"
+)

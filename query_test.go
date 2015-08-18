@@ -6,12 +6,9 @@ import (
 )
 
 func (s *BaseSuite) TestBaseQuery_AddCriteria(c *C) {
-	foo := bson.M{"foo": "foo"}
-	qux := bson.M{"qux": "qux"}
-
 	q := NewBaseQuery()
-	q.AddCriteria(foo)
-	q.AddCriteria(qux)
+	q.AddCriteria(bson.M{"foo": "foo"})
+	q.AddCriteria(bson.M{"qux": "qux"})
 
 	c.Assert(q.GetCriteria(), DeepEquals, bson.M{
 		"$and": []bson.M{
@@ -19,4 +16,12 @@ func (s *BaseSuite) TestBaseQuery_AddCriteria(c *C) {
 			bson.M{"qux": "qux"},
 		},
 	})
+}
+
+func (s *BaseSuite) TestBaseQuery_String(c *C) {
+	q := NewBaseQuery()
+	q.AddCriteria(bson.M{"foo": "foo"})
+	q.AddCriteria(bson.M{"qux": "qux"})
+
+	c.Assert(q.String(), Equals, "{\"$and\":[{\"foo\":\"foo\"},{\"qux\":\"qux\"}]}")
 }
