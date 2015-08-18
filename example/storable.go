@@ -3,10 +3,10 @@ package example
 import (
 	"time"
 
-	"github.com/tyba/storable"
-	"github.com/tyba/storable/operators"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/tyba/storable.v1"
+	"gopkg.in/tyba/storable.v1/operators"
 )
 
 type ProductStore struct {

@@ -16,11 +16,11 @@ install:
 
 script:
   - go generate ./...
-  - go test -v github.com/tyba/storable/generator
-  - go test -v github.com/tyba/storable -covermode=count -coverprofile=coverage.out
-  - go test -v github.com/tyba/storable/operators -covermode=count -coverprofile=tmp.out
+  - go test -v gopkg.in/tyba/storable.v1/generator
+  - go test -v gopkg.in/tyba/storable.v1 -covermode=count -coverprofile=coverage.out
+  - go test -v gopkg.in/tyba/storable.v1/operators -covermode=count -coverprofile=tmp.out
   - tail -n +2 tmp.out >> coverage.out
-  - go test -v github.com/tyba/storable/tests -covermode=count -coverprofile=tmp.out
+  - go test -v gopkg.in/tyba/storable.v1/tests -covermode=count -coverprofile=tmp.out
   - tail -n +2 tmp.out >> coverage.out
 
 after_success:

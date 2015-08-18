@@ -3,7 +3,7 @@ package tests
 import (
 	"errors"
 
-	"github.com/tyba/storable"
+	"gopkg.in/tyba/storable.v1"
 	. "gopkg.in/check.v1"
 )
 

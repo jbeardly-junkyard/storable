@@ -3,7 +3,7 @@ package storable
 import (
 	"encoding/json"
 
-	"github.com/tyba/storable/operators"
+	"gopkg.in/tyba/storable.v1/operators"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -36,7 +36,7 @@ func NewBaseQuery() *BaseQuery {
 //
 // Use operators package instead of build expresion by hand:
 //
-//  import . "github.com/tyba/storable/operators"
+//  import . "gopkg.in/tyba/storable.v1/operators"
 //
 //  func (q *YourQuery) FindNonZeroRecords() {
 //      // All the Fields are defined on the Schema generated variable

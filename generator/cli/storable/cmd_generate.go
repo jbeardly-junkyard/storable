@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tyba/storable/generator"
+	"gopkg.in/tyba/storable.v1/generator"
 )
 
 type CmdGenerate struct {

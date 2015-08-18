@@ -1,6 +1,6 @@
 package tests
 
-import "github.com/tyba/storable"
+import "gopkg.in/tyba/storable.v1"
 
 type EventsFixture struct {
 	storable.Document `bson:",inline" collection:"event"`
