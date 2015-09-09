@@ -36,15 +36,15 @@ func (s *BaseSuite) TestMap_Key(c *C) {
 	c.Assert(f.Type(), Equals, "string")
 }
 
-func (s *BaseSuite) TestSort_String(c *C) {
+func (s *BaseSuite) TestSort_MgoFormat(c *C) {
 	sort := Sort{{NewField("foo", ""), Asc}}
-	c.Assert(sort.String(), Equals, "foo")
+	c.Assert(sort.MgoFormat(), DeepEquals, []string{"foo"})
 
 	sort = Sort{{NewField("foo", ""), Desc}}
-	c.Assert(sort.String(), Equals, "-foo")
+	c.Assert(sort.MgoFormat(), DeepEquals, []string{"-foo"})
 
-	sort = Sort{{NewField("foo", ""), Asc}, {Field{"qux", ""}, Desc}}
-	c.Assert(sort.String(), Equals, "foo,-qux")
+	sort = Sort{{NewField("foo", ""), Asc}, {NewField("qux", ""), Desc}}
+	c.Assert(sort.MgoFormat(), DeepEquals, []string{"foo", "-qux"})
 }
 
 func (s *BaseSuite) TestSort_IsEmpty(c *C) {

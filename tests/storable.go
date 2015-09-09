@@ -394,6 +394,179 @@ func (r *EventsSaveFixtureResultSet) ForEach(f func(*EventsSaveFixture) error) e
 	return nil
 }
 
+type MultiKeySortFixtureStore struct {
+	storable.Store
+}
+
+func NewMultiKeySortFixtureStore(db *mgo.Database) *MultiKeySortFixtureStore {
+	return &MultiKeySortFixtureStore{*storable.NewStore(db, "query")}
+}
+
+// New returns a new instance of MultiKeySortFixture.
+func (s *MultiKeySortFixtureStore) New() (doc *MultiKeySortFixture) {
+	doc = &MultiKeySortFixture{}
+	doc.SetIsNew(true)
+	doc.SetId(bson.NewObjectId())
+	return
+}
+
+// Query return a new instance of MultiKeySortFixtureQuery.
+func (s *MultiKeySortFixtureStore) Query() *MultiKeySortFixtureQuery {
+	return &MultiKeySortFixtureQuery{*storable.NewBaseQuery()}
+}
+
+// Find performs a find on the collection using the given query.
+func (s *MultiKeySortFixtureStore) Find(query *MultiKeySortFixtureQuery) (*MultiKeySortFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MultiKeySortFixtureResultSet{ResultSet: *resultSet}, nil
+}
+
+// MustFind like Find but panics on error
+func (s *MultiKeySortFixtureStore) MustFind(query *MultiKeySortFixtureQuery) *MultiKeySortFixtureResultSet {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+// FindOne performs a find on the collection using the given query returning
+// the first document from the resultset.
+func (s *MultiKeySortFixtureStore) FindOne(query *MultiKeySortFixtureQuery) (*MultiKeySortFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+// MustFindOne like FindOne but panics on error
+func (s *MultiKeySortFixtureStore) MustFindOne(query *MultiKeySortFixtureQuery) *MultiKeySortFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+// Insert insert the given document on the collection, trigger BeforeInsert and
+// AfterInsert if any. Throws ErrNonNewDocument if doc is a non-new document.
+func (s *MultiKeySortFixtureStore) Insert(doc *MultiKeySortFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update update the given document on the collection, trigger BeforeUpdate and
+// AfterUpdate if any. Throws ErrNewDocument if doc is a new document.
+func (s *MultiKeySortFixtureStore) Update(doc *MultiKeySortFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Save insert or update the given document on the collection using Upsert,
+// trigger BeforeUpdate and AfterUpdate if the document is non-new and
+// BeforeInsert and AfterInset if is new.
+func (s *MultiKeySortFixtureStore) Save(doc *MultiKeySortFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type MultiKeySortFixtureQuery struct {
+	storable.BaseQuery
+}
+
+// FindById add a new criteria to the query searching by _id
+func (q *MultiKeySortFixtureQuery) FindById(ids ...bson.ObjectId) *MultiKeySortFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type MultiKeySortFixtureResultSet struct {
+	storable.ResultSet
+	last    *MultiKeySortFixture
+	lastErr error
+}
+
+// All returns all documents on the resultset and close the resultset
+func (r *MultiKeySortFixtureResultSet) All() ([]*MultiKeySortFixture, error) {
+	var result []*MultiKeySortFixture
+	err := r.ResultSet.All(&result)
+
+	return result, err
+}
+
+// One returns the first document on the resultset and close the resultset
+func (r *MultiKeySortFixtureResultSet) One() (*MultiKeySortFixture, error) {
+	var result *MultiKeySortFixture
+	err := r.ResultSet.One(&result)
+
+	return result, err
+}
+
+// Next prepares the next result document for reading with the Get method.
+func (r *MultiKeySortFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	return
+}
+
+// Get returns the document retrieved with the Next method.
+func (r *MultiKeySortFixtureResultSet) Get() (*MultiKeySortFixture, error) {
+	return r.last, r.lastErr
+}
+
+// ForEach iterates the resultset calling to the given function.
+func (r *MultiKeySortFixtureResultSet) ForEach(f func(*MultiKeySortFixture) error) error {
+	for {
+		var result *MultiKeySortFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type QueryFixtureStore struct {
 	storable.Store
 }
@@ -1262,6 +1435,7 @@ func (r *StoreWithConstructFixtureResultSet) ForEach(f func(*StoreWithConstructF
 type schema struct {
 	EventsFixture             *schemaEventsFixture
 	EventsSaveFixture         *schemaEventsSaveFixture
+	MultiKeySortFixture       *schemaMultiKeySortFixture
 	QueryFixture              *schemaQueryFixture
 	ResultSetFixture          *schemaResultSetFixture
 	SchemaFixture             *schemaSchemaFixture
@@ -1275,6 +1449,12 @@ type schemaEventsFixture struct {
 
 type schemaEventsSaveFixture struct {
 	Checks storable.Map
+}
+
+type schemaMultiKeySortFixture struct {
+	Name  storable.Field
+	Start storable.Field
+	End   storable.Field
 }
 
 type schemaQueryFixture struct {
@@ -1328,6 +1508,11 @@ var Schema = schema{
 	},
 	EventsSaveFixture: &schemaEventsSaveFixture{
 		Checks: storable.NewMap("checks.[map]", "bool"),
+	},
+	MultiKeySortFixture: &schemaMultiKeySortFixture{
+		Name:  storable.NewField("name", "string"),
+		Start: storable.NewField("start", "time.Time"),
+		End:   storable.NewField("end", "time.Time"),
 	},
 	QueryFixture: &schemaQueryFixture{
 		Foo: storable.NewField("foo", "string"),

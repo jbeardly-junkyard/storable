@@ -67,8 +67,8 @@ type FieldSort struct {
 	D Dir
 }
 
-// String returns a representation of Sort compatible with the format of mgo.
-func (s Sort) String() string {
+// Mgo returns a representation of Sort compatible with the format of mgo.
+func (s Sort) MgoFormat() []string {
 	var fields []string
 	for _, fs := range s {
 		f := ""
@@ -81,7 +81,7 @@ func (s Sort) String() string {
 		fields = append(fields, f)
 	}
 
-	return strings.Join(fields, ",")
+	return fields
 }
 
 // IsEmpty returns if this sort map is empty or not
