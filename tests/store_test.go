@@ -128,8 +128,8 @@ func (s *MongoSuite) TestMultiKeySort(c *C) {
 
 	q := store.Query()
 	q.Sort(storable.Sort{
-		storable.FieldSort{storable.NewField("end", ""), storable.Desc},
-		storable.FieldSort{storable.NewField("start", ""), storable.Desc},
+		storable.FieldSort{Schema.MultiKeySortFixture.End, storable.Desc},
+		storable.FieldSort{Schema.MultiKeySortFixture.Start, storable.Desc},
 	})
 
 	set, err := store.Find(q)
