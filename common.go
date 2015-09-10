@@ -67,8 +67,8 @@ type FieldSort struct {
 	D Dir
 }
 
-// Mgo returns a representation of Sort compatible with the format of mgo.
-func (s Sort) MgoFormat() []string {
+// ToList returns a representation of Sort compatible with the format of mgo.
+func (s Sort) ToList() []string {
 	var fields []string
 	for _, fs := range s {
 		f := ""
