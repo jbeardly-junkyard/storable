@@ -100,7 +100,7 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 	mq := c.Find(q.GetCriteria())
 
 	if !q.GetSort().IsEmpty() {
-		mq.Sort(q.GetSort().String())
+		mq.Sort(q.GetSort().ToList()...)
 	}
 
 	if q.GetSkip() != 0 {

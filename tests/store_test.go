@@ -1,6 +1,11 @@
 package tests
 
-import . "gopkg.in/check.v1"
+import (
+	"time"
+
+	. "gopkg.in/check.v1"
+	"gopkg.in/tyba/storable.v1"
+)
 
 func (s *MongoSuite) TestStoreNew(c *C) {
 	store := NewStoreFixtureStore(s.db)
@@ -83,4 +88,59 @@ func (s *MongoSuite) TestStoreSave(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(updated, Equals, true)
 	c.Assert(store.MustFindOne(store.Query()).Foo, Equals, "bar")
+}
+
+func (s *MongoSuite) TestMultiKeySort(c *C) {
+	store := NewMultiKeySortFixtureStore(s.db)
+
+	var (
+		doc *MultiKeySortFixture
+		err error
+	)
+
+	doc = store.New()
+	doc.Name = "2015-2013"
+	doc.Start = time.Date(2005, 1, 2, 0, 0, 0, 0, time.UTC)
+	doc.End = time.Date(2013, 1, 2, 0, 0, 0, 0, time.UTC)
+	err = store.Insert(doc)
+	c.Assert(err, IsNil)
+
+	doc = store.New()
+	doc.Name = "2015-2012"
+	doc.Start = time.Date(2005, 1, 2, 0, 0, 0, 0, time.UTC)
+	doc.End = time.Date(2012, 4, 5, 0, 0, 0, 0, time.UTC)
+	err = store.Insert(doc)
+	c.Assert(err, IsNil)
+
+	doc = store.New()
+	doc.Name = "2002-2012"
+	doc.Start = time.Date(2002, 1, 2, 0, 0, 0, 0, time.UTC)
+	doc.End = time.Date(2012, 1, 2, 0, 0, 0, 0, time.UTC)
+	err = store.Insert(doc)
+	c.Assert(err, IsNil)
+
+	doc = store.New()
+	doc.Name = "2001-2012"
+	doc.Start = time.Date(2001, 1, 2, 0, 0, 0, 0, time.UTC)
+	doc.End = time.Date(2012, 1, 2, 0, 0, 0, 0, time.UTC)
+	err = store.Insert(doc)
+	c.Assert(err, IsNil)
+
+	q := store.Query()
+	q.Sort(storable.Sort{
+		storable.FieldSort{Schema.MultiKeySortFixture.End, storable.Desc},
+		storable.FieldSort{Schema.MultiKeySortFixture.Start, storable.Desc},
+	})
+
+	set, err := store.Find(q)
+	c.Assert(err, IsNil)
+
+	documents, err := set.All()
+	c.Assert(err, IsNil)
+
+	c.Assert(documents, HasLen, 4)
+	c.Assert(documents[0].Name, Equals, "2015-2013")
+	c.Assert(documents[1].Name, Equals, "2015-2012")
+	c.Assert(documents[2].Name, Equals, "2002-2012")
+	c.Assert(documents[3].Name, Equals, "2001-2012")
 }
