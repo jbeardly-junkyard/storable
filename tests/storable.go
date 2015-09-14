@@ -18,8 +18,10 @@ func NewEventsFixtureStore(db *mgo.Database) *EventsFixtureStore {
 // New returns a new instance of EventsFixture.
 func (s *EventsFixtureStore) New() (doc *EventsFixture) {
 	doc = newEventsFixture()
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -219,8 +221,10 @@ func NewEventsSaveFixtureStore(db *mgo.Database) *EventsSaveFixtureStore {
 // New returns a new instance of EventsSaveFixture.
 func (s *EventsSaveFixtureStore) New() (doc *EventsSaveFixture) {
 	doc = newEventsSaveFixture()
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -578,8 +582,10 @@ func NewQueryFixtureStore(db *mgo.Database) *QueryFixtureStore {
 // New returns a new instance of QueryFixture.
 func (s *QueryFixtureStore) New(f string) (doc *QueryFixture) {
 	doc = newQueryFixture(f)
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -751,8 +757,10 @@ func NewResultSetFixtureStore(db *mgo.Database) *ResultSetFixtureStore {
 // New returns a new instance of ResultSetFixture.
 func (s *ResultSetFixtureStore) New(f string) (doc *ResultSetFixture) {
 	doc = newResultSetFixture(f)
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -924,8 +932,10 @@ func NewSchemaFixtureStore(db *mgo.Database) *SchemaFixtureStore {
 // New returns a new instance of SchemaFixture.
 func (s *SchemaFixtureStore) New() (doc *SchemaFixture) {
 	doc = &SchemaFixture{}
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -1097,8 +1107,10 @@ func NewStoreFixtureStore(db *mgo.Database) *StoreFixtureStore {
 // New returns a new instance of StoreFixture.
 func (s *StoreFixtureStore) New() (doc *StoreFixture) {
 	doc = &StoreFixture{}
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -1270,8 +1282,10 @@ func NewStoreWithConstructFixtureStore(db *mgo.Database) *StoreWithConstructFixt
 // New returns a new instance of StoreWithConstructFixture.
 func (s *StoreWithConstructFixtureStore) New(f string) (doc *StoreWithConstructFixture) {
 	doc = newStoreWithConstructFixture(f)
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 

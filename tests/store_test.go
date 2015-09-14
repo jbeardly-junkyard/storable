@@ -44,6 +44,13 @@ func (s *MongoSuite) TestStoreMustFind(c *C) {
 	c.Assert(count, Equals, 2)
 }
 
+func (s *MongoSuite) TestStoreFailingOnNew(c *C) {
+	store := NewStoreWithConstructFixtureStore(s.db)
+
+	doc := store.New("")
+	c.Assert(doc, IsNil)
+}
+
 func (s *MongoSuite) TestStoreFindOne(c *C) {
 	store := NewStoreWithConstructFixtureStore(s.db)
 	c.Assert(store.Insert(store.New("bar")), IsNil)

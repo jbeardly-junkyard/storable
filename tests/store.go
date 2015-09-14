@@ -17,6 +17,9 @@ type StoreWithConstructFixture struct {
 }
 
 func newStoreWithConstructFixture(f string) *StoreWithConstructFixture {
+	if f == "" {
+		return nil
+	}
 	return &StoreWithConstructFixture{Foo: f}
 }
 
