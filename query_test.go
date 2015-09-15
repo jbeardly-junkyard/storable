@@ -23,5 +23,5 @@ func (s *BaseSuite) TestBaseQuery_String(c *C) {
 	q.AddCriteria(bson.M{"foo": "foo"})
 	q.AddCriteria(bson.M{"qux": "qux"})
 
-	c.Assert(q.String(), Equals, "{\"$and\":[{\"foo\":\"foo\"},{\"qux\":\"qux\"}]}")
+	c.Assert(q.String(), Equals, `{"$and":[{"foo":"foo"},{"qux":"qux"}]}`)
 }
