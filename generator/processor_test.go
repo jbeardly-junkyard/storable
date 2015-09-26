@@ -17,6 +17,23 @@ type ProcessorSuite struct{}
 
 var _ = Suite(&ProcessorSuite{})
 
+func (s *ProcessorSuite) TestInlineStruct(c *C) {
+	fixtureSrc := `
+  package fixture
+
+  import  "gopkg.in/tyba/storable.v1"
+
+  type Recur struct {
+    storable.Document
+    Foo string
+    R *Recur ` + "`bson:\",inline\"`" + `
+  }
+  `
+
+	pkg := s.processFixture(fixtureSrc)
+	c.Assert(pkg.Models[0].Fields[2].Fields[2].Inline(), Equals, true)
+}
+
 func (s *ProcessorSuite) TestTags(c *C) {
 	fixtureSrc := `
 	package fixture

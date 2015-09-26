@@ -10,6 +10,10 @@ func (s *MongoSuite) TestSchemaRanamedField(c *C) {
 	c.Assert(Schema.SchemaFixture.Int.String(), Equals, "foo")
 }
 
+func (s *MongoSuite) TestSchemaInlineField(c *C) {
+	c.Assert(Schema.SchemaFixture.Inline.Inline.String(), Equals, "inline")
+}
+
 func (s *MongoSuite) TestSchemaNestedField(c *C) {
 	c.Assert(Schema.SchemaFixture.Nested.Int.String(), Equals, "nested.foo")
 }

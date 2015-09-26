@@ -409,8 +409,10 @@ func NewMultiKeySortFixtureStore(db *mgo.Database) *MultiKeySortFixtureStore {
 // New returns a new instance of MultiKeySortFixture.
 func (s *MultiKeySortFixtureStore) New() (doc *MultiKeySortFixture) {
 	doc = &MultiKeySortFixture{}
-	doc.SetIsNew(true)
-	doc.SetId(bson.NewObjectId())
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
 	return
 }
 
@@ -1483,6 +1485,7 @@ type schemaSchemaFixture struct {
 	String         storable.Field
 	Int            storable.Field
 	Nested         *schemaSchemaFixtureNested
+	Inline         *schemaSchemaFixtureInline
 	MapOfString    storable.Map
 	MapOfInterface storable.Map
 	MapOfSomeType  *schemaSchemaFixtureMapOfSomeType
@@ -1500,9 +1503,14 @@ type schemaSchemaFixtureNested struct {
 	String         storable.Field
 	Int            storable.Field
 	Nested         *schemaSchemaFixtureNestedNested
+	Inline         *schemaSchemaFixtureNestedInline
 	MapOfString    storable.Map
 	MapOfInterface storable.Map
 	MapOfSomeType  *schemaSchemaFixtureNestedMapOfSomeType
+}
+
+type schemaSchemaFixtureInline struct {
+	Inline storable.Field
 }
 
 type schemaSchemaFixtureMapOfSomeType struct {
@@ -1510,6 +1518,10 @@ type schemaSchemaFixtureMapOfSomeType struct {
 }
 
 type schemaSchemaFixtureNestedNested struct {
+}
+
+type schemaSchemaFixtureNestedInline struct {
+	Inline storable.Field
 }
 
 type schemaSchemaFixtureNestedMapOfSomeType struct {
@@ -1538,14 +1550,20 @@ var Schema = schema{
 		String: storable.NewField("string", "string"),
 		Int:    storable.NewField("foo", "int"),
 		Nested: &schemaSchemaFixtureNested{
-			String:         storable.NewField("nested.string", "string"),
-			Int:            storable.NewField("nested.foo", "int"),
-			Nested:         &schemaSchemaFixtureNestedNested{},
+			String: storable.NewField("nested.string", "string"),
+			Int:    storable.NewField("nested.foo", "int"),
+			Nested: &schemaSchemaFixtureNestedNested{},
+			Inline: &schemaSchemaFixtureNestedInline{
+				Inline: storable.NewField("nested.inline", "string"),
+			},
 			MapOfString:    storable.NewMap("nested.mapofstring.[map]", "string"),
 			MapOfInterface: storable.NewMap("nested.mapofinterface.[map]", "interface{}"),
 			MapOfSomeType: &schemaSchemaFixtureNestedMapOfSomeType{
 				Foo: storable.NewMap("nested.mapofsometype.[map].foo", "string"),
 			},
+		},
+		Inline: &schemaSchemaFixtureInline{
+			Inline: storable.NewField("inline", "string"),
 		},
 		MapOfString:    storable.NewMap("mapofstring.[map]", "string"),
 		MapOfInterface: storable.NewMap("mapofinterface.[map]", "interface{}"),

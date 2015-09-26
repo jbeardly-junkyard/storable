@@ -301,7 +301,10 @@ func (f *Field) GetPath() string {
 			path = append(path, "[map]")
 		}
 
-		path = append(path, recursive.DbName())
+		if !recursive.Inline() {
+			path = append(path, recursive.DbName())
+		}
+
 		recursive = recursive.Parent
 		if done[recursive] {
 			break
@@ -349,6 +352,17 @@ func (f *Field) DbName() string {
 	}
 
 	return name
+}
+
+func (f *Field) Inline() bool {
+	tag := f.GetTagValue("bson")
+	endFieldName := strings.Index(tag, ",")
+
+	if endFieldName >= len(tag) {
+		return false
+	}
+
+	return tag[endFieldName+1:] == "inline"
 }
 
 func (f *Field) ValidFields() []*Field {
