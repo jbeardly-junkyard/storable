@@ -5,6 +5,7 @@ services:
 
 go:
   - 1.4
+  - 1.5	 
   - tip
 
 before_install:
@@ -13,6 +14,8 @@ before_install:
 
 install:
   - go get -t -v ./...
+  - mkdir -p $GOPATH/src/gopkg.in/tyba
+  - cp -rf $PWD $GOPATH/src/gopkg.in/tyba/storable.v1
 
 script:
   - go generate ./...
