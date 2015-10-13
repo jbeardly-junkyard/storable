@@ -162,7 +162,7 @@ func (s *Store) RawDelete(query Query, multi bool) error {
 }
 
 func (s *Store) getSessionAndCollection() (*mgo.Session, *mgo.Collection) {
-	sess := s.db.Session.Clone()
+	sess := s.db.Session.Copy()
 
 	return sess, sess.DB(s.db.Name).C(s.collection)
 }
