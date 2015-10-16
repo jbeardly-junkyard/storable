@@ -26,4 +26,5 @@ script:
   - tail -n +2 tmp.out >> coverage.out
 
 after_success:
-  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ttHfPtGawLnRyuGi8dxsddBDs1COrrI2o
+  - bash <(curl -s https://codecov.io/bash)
+
