@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"gopkg.in/tyba/storable.v1"
+	"gopkg.in/src-d/storable.v1"
 )
 
 //go:generate storable gen

@@ -21,7 +21,7 @@ func (s *ProcessorSuite) TestInlineStruct(c *C) {
 	fixtureSrc := `
   package fixture
 
-  import  "gopkg.in/tyba/storable.v1"
+  import  "gopkg.in/src-d/storable.v1"
 
   type Recur struct {
     storable.Document
@@ -38,7 +38,7 @@ func (s *ProcessorSuite) TestTags(c *C) {
 	fixtureSrc := `
 	package fixture
 
-	import 	"gopkg.in/tyba/storable.v1"
+	import 	"gopkg.in/src-d/storable.v1"
 
 	type Foo struct {
 		storable.Document
@@ -54,7 +54,7 @@ func (s *ProcessorSuite) TestRecursiveStruct(c *C) {
 	fixtureSrc := `
 	package fixture
 
-	import 	"gopkg.in/tyba/storable.v1"
+	import 	"gopkg.in/src-d/storable.v1"
 
 	type Recur struct {
 		storable.Document
@@ -79,7 +79,7 @@ func (s *ProcessorSuite) TestDeepRecursiveStruct(c *C) {
 	fixtureSrc := `
 	package fixture
 
-	import 	"gopkg.in/tyba/storable.v1"
+	import 	"gopkg.in/src-d/storable.v1"
 
 	type Recur struct {
 		storable.Document

@@ -3,7 +3,7 @@ package tests
 import (
 	"time"
 
-	"gopkg.in/tyba/storable.v1"
+	"gopkg.in/src-d/storable.v1"
 )
 
 type StoreFixture struct {

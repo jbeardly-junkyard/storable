@@ -4,7 +4,7 @@ import (
 	"time"
 
 	. "gopkg.in/check.v1"
-	"gopkg.in/tyba/storable.v1"
+	"gopkg.in/src-d/storable.v1"
 )
 
 func (s *MongoSuite) TestStoreNew(c *C) {

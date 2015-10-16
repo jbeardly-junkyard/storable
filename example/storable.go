@@ -5,8 +5,8 @@ import (
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/tyba/storable.v1"
-	"gopkg.in/tyba/storable.v1/operators"
+	"gopkg.in/src-d/storable.v1"
+	"gopkg.in/src-d/storable.v1/operators"
 )
 
 type ProductStore struct {

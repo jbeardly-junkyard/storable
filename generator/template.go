@@ -159,7 +159,7 @@ func printDocumentWithNumbers(code string) {
 }
 
 func loadTemplateText(filename string) string {
-	filename = filepath.Join(build.Default.GOPATH, "src/gopkg.in/tyba/storable.v1/generator", filename)
+	filename = filepath.Join(build.Default.GOPATH, "src/gopkg.in/src-d/storable.v1/generator", filename)
 	f, err := os.Open(filename)
 	if err != nil {
 		panic(err)

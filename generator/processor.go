@@ -16,7 +16,7 @@ import (
 	"golang.org/x/tools/go/types"
 )
 
-const BaseDocument = "gopkg.in/tyba/storable.v1.Document"
+const BaseDocument = "gopkg.in/src-d/storable.v1.Document"
 
 type Processor struct {
 	Path       string

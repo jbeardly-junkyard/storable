@@ -13,16 +13,16 @@ before_install:
 
 install:
   - go get -t -v ./...
-  - mkdir -p $GOPATH/src/gopkg.in/tyba
-  - cp -rf $PWD $GOPATH/src/gopkg.in/tyba/storable.v1
+  - mkdir -p $GOPATH/src/gopkg.in/src-d
+  - cp -rf $PWD $GOPATH/src/gopkg.in/src-d/storable.v1
 
 script:
   - go generate ./...
-  - go test -v gopkg.in/tyba/storable.v1/generator
-  - go test -v gopkg.in/tyba/storable.v1 -covermode=count -coverprofile=coverage.out
-  - go test -v gopkg.in/tyba/storable.v1/operators -covermode=count -coverprofile=tmp.out
+  - go test -v gopkg.in/src-d/storable.v1/generator
+  - go test -v gopkg.in/src-d/storable.v1 -covermode=count -coverprofile=coverage.out
+  - go test -v gopkg.in/src-d/storable.v1/operators -covermode=count -coverprofile=tmp.out
   - tail -n +2 tmp.out >> coverage.out
-  - go test -v gopkg.in/tyba/storable.v1/tests -covermode=count -coverprofile=tmp.out
+  - go test -v gopkg.in/src-d/storable.v1/tests -covermode=count -coverprofile=tmp.out
   - tail -n +2 tmp.out >> coverage.out
 
 after_success:
