@@ -97,6 +97,18 @@ func (s *MongoSuite) TestStoreSave(c *C) {
 	c.Assert(store.MustFindOne(store.Query()).Foo, Equals, "bar")
 }
 
+func (s *MongoSuite) TestStoreCustomNew(c *C) {
+	store := NewStoreWithNewFixtureStore(s.db)
+
+	doc := store.New("foo", "bar")
+	updated, err := store.Save(doc)
+	c.Assert(err, IsNil)
+	c.Assert(updated, Equals, false)
+	c.Assert(doc.IsNew(), Equals, false)
+	c.Assert(store.MustFindOne(store.Query()).Foo, Equals, "foo")
+	c.Assert(store.MustFindOne(store.Query()).Bar, Equals, "bar")
+}
+
 func (s *MongoSuite) TestMultiKeySort(c *C) {
 	store := NewMultiKeySortFixtureStore(s.db)
 

@@ -212,6 +212,7 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 
 func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 	m := NewModel(name)
+	m.New = p.isNewPresent(name)
 	m.Events = p.getEvents(name)
 
 	var base int
@@ -243,6 +244,16 @@ func (p *Processor) getEvents(name string) []Event {
 	}
 
 	return events
+}
+func (p *Processor) isNewPresent(name string) bool {
+	re := regexp.MustCompile(fmt.Sprintf("\\*%sStore\\) New\\(", name))
+	for _, code := range p.SourceCode {
+		if re.Match(code) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (p *Processor) isEventPresent(name string, e Event) bool {

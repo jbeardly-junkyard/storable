@@ -74,6 +74,7 @@ type Model struct {
 	Collection  string
 	Type        string
 	Fields      []*Field
+	New         bool
 	Events      Events
 	CheckedNode *types.Named
 	NewFunc     *types.Func

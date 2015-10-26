@@ -10,6 +10,7 @@ func New{{.StoreName}}(db *mgo.Database) *{{.StoreName}} {
 }
 {{end}}
 
+{{if not .New}}
 // New returns a new instance of {{.Name}}.
 func (s *{{.StoreName}}) New({{.NewArgs}}) {{.NewReturns}} {
 	{{.NewRetVars}} = {{if .NewFunc}}{{.NewFunc.Name}}({{.NewArgVars}}){{else}}&{{.Name}}{}{{end}}
@@ -19,6 +20,8 @@ func (s *{{.StoreName}}) New({{.NewArgs}}) {{.NewReturns}} {
     }
     return
 }
+{{end}}
+
 
 // Query return a new instance of {{.QueryName}}.
 func (s *{{.StoreName}}) Query() *{{.QueryName}} {
