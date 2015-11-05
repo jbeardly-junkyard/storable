@@ -44,12 +44,8 @@ func (s *ProductStore) Find(query *ProductQuery) (*ProductResultSet, error) {
 
 // MustFind like Find but panics on error
 func (s *ProductStore) MustFind(query *ProductQuery) *ProductResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &ProductResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning

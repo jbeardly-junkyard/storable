@@ -42,12 +42,8 @@ func (s *EventsFixtureStore) Find(query *EventsFixtureQuery) (*EventsFixtureResu
 
 // MustFind like Find but panics on error
 func (s *EventsFixtureStore) MustFind(query *EventsFixtureQuery) *EventsFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &EventsFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -245,12 +241,8 @@ func (s *EventsSaveFixtureStore) Find(query *EventsSaveFixtureQuery) (*EventsSav
 
 // MustFind like Find but panics on error
 func (s *EventsSaveFixtureStore) MustFind(query *EventsSaveFixtureQuery) *EventsSaveFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &EventsSaveFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -433,12 +425,8 @@ func (s *MultiKeySortFixtureStore) Find(query *MultiKeySortFixtureQuery) (*Multi
 
 // MustFind like Find but panics on error
 func (s *MultiKeySortFixtureStore) MustFind(query *MultiKeySortFixtureQuery) *MultiKeySortFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &MultiKeySortFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -608,12 +596,8 @@ func (s *QueryFixtureStore) Find(query *QueryFixtureQuery) (*QueryFixtureResultS
 
 // MustFind like Find but panics on error
 func (s *QueryFixtureStore) MustFind(query *QueryFixtureQuery) *QueryFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &QueryFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -783,12 +767,8 @@ func (s *ResultSetFixtureStore) Find(query *ResultSetFixtureQuery) (*ResultSetFi
 
 // MustFind like Find but panics on error
 func (s *ResultSetFixtureStore) MustFind(query *ResultSetFixtureQuery) *ResultSetFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &ResultSetFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -958,12 +938,8 @@ func (s *SchemaFixtureStore) Find(query *SchemaFixtureQuery) (*SchemaFixtureResu
 
 // MustFind like Find but panics on error
 func (s *SchemaFixtureStore) MustFind(query *SchemaFixtureQuery) *SchemaFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &SchemaFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -1133,12 +1109,8 @@ func (s *StoreFixtureStore) Find(query *StoreFixtureQuery) (*StoreFixtureResultS
 
 // MustFind like Find but panics on error
 func (s *StoreFixtureStore) MustFind(query *StoreFixtureQuery) *StoreFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &StoreFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -1308,12 +1280,8 @@ func (s *StoreWithConstructFixtureStore) Find(query *StoreWithConstructFixtureQu
 
 // MustFind like Find but panics on error
 func (s *StoreWithConstructFixtureStore) MustFind(query *StoreWithConstructFixtureQuery) *StoreWithConstructFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &StoreWithConstructFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning
@@ -1473,12 +1441,8 @@ func (s *StoreWithNewFixtureStore) Find(query *StoreWithNewFixtureQuery) (*Store
 
 // MustFind like Find but panics on error
 func (s *StoreWithNewFixtureStore) MustFind(query *StoreWithNewFixtureQuery) *StoreWithNewFixtureResultSet {
-	resultSet, err := s.Find(query)
-	if err != nil {
-		panic(err)
-	}
-
-	return resultSet
+	resultSet := s.Store.MustFind(query)
+	return &StoreWithNewFixtureResultSet{ResultSet: *resultSet}
 }
 
 // FindOne performs a find on the collection using the given query returning

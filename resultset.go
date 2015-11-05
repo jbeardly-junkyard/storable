@@ -24,7 +24,8 @@ type ResultSet struct {
 	mgoIter  *mgo.Iter
 }
 
-// Count returns the total number of documents in the ResultSet.
+// Count returns the total number of documents in the ResultSet. Count DON'T
+// close the ResultSet after be called.
 func (r *ResultSet) Count() (int, error) {
 	return r.mgoQuery.Count()
 }
@@ -73,11 +74,14 @@ func (r *ResultSet) Close() error {
 		return ErrResultSetClosed
 	}
 
-	r.IsClosed = true
+	defer func() {
+		r.session.Close()
+		r.IsClosed = true
+	}()
+
 	if r.mgoIter == nil {
 		return nil
 	}
 
-	defer r.session.Close()
 	return r.mgoIter.Close()
 }

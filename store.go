@@ -118,6 +118,37 @@ func (s *Store) Find(q Query) (*ResultSet, error) {
 	return &ResultSet{session: sess, mgoQuery: mq}, nil
 }
 
+// MustFind like Find but panics on error
+func (s *Store) MustFind(q Query) *ResultSet {
+	resultSet, err := s.Find(q)
+	if err != nil {
+		panic(err)
+	}
+
+	return resultSet
+}
+
+// Count executes the given query in the collection and returns the count
+func (s *Store) Count(q Query) (int, error) {
+	rs, err := s.Find(q)
+	if err != nil {
+		return -1, err
+	}
+
+	defer rs.Close()
+	return rs.Count()
+}
+
+// MustCount like Count but panics on error
+func (s *Store) MustCount(q Query) int {
+	count, err := s.Count(q)
+	if err != nil {
+		panic(err)
+	}
+
+	return count
+}
+
 // RawUpdate performes a direct update in the collection, update is wrapped on
 // a $set operator. If a query without criteria is given EmptyQueryInRawErr is
 // returned

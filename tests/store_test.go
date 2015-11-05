@@ -34,6 +34,16 @@ func (s *MongoSuite) TestStoreFind(c *C) {
 	c.Assert(count, Equals, 2)
 }
 
+func (s *MongoSuite) TestStoreCount(c *C) {
+	store := NewStoreFixtureStore(s.db)
+	c.Assert(store.Insert(store.New()), IsNil)
+	c.Assert(store.Insert(store.New()), IsNil)
+
+	count, err := store.Count(store.Query())
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, 2)
+}
+
 func (s *MongoSuite) TestStoreMustFind(c *C) {
 	store := NewStoreFixtureStore(s.db)
 	c.Assert(store.Insert(store.New()), IsNil)
