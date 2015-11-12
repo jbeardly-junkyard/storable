@@ -10,3 +10,13 @@ type ResultSetFixture struct {
 func newResultSetFixture(f string) *ResultSetFixture {
 	return &ResultSetFixture{Foo: f}
 }
+
+type ResultSetInitFixture struct {
+	storable.Document `bson:",inline" collection:"resultset"`
+	Foo               string
+}
+
+func (r *ResultSetInitFixture) Init() error {
+	r.Foo = "foo"
+	return nil
+}

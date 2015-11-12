@@ -146,6 +146,7 @@ func (r *ProductResultSet) One() (*Product, error) {
 func (r *ProductResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -162,7 +163,6 @@ func (r *ProductResultSet) ForEach(f func(*Product) error) error {
 		if err != nil {
 			return err
 		}
-
 		if !found {
 			break
 		}

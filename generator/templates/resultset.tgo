@@ -9,14 +9,33 @@ type {{.ResultSetName}} struct {
 func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     var result []*{{.Name}}
     err := r.ResultSet.All(&result)
+    {{if .Init}} \
+    if err != nil {
+	return result, err
+    }
 
-    return result, err
+    for _, r := range result {
+	if err := r.Init(); err != nil {
+	    return result, err   
+	}
+    }
+    {{end}} \
+
+
+    return result, err 
 }
 
 // One returns the first document on the resultset and close the resultset
 func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
     var result *{{.Name}}
     err := r.ResultSet.One(&result)
+    {{if .Init}} \
+    if err != nil {
+	return result, err
+    }
+
+    err = result.Init()
+    {{end}} \
 
     return result, err
 }
@@ -25,6 +44,14 @@ func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
 func (r *{{.ResultSetName}}) Next() (returned bool) {
     r.last = nil
     returned, r.lastErr = r.ResultSet.Next(&r.last)
+    {{if .Init}} \
+    if r.lastErr != nil {
+	return
+    }
+
+    r.lastErr = r.last.Init()
+    {{end}} \
+
     return
 }
 
@@ -41,11 +68,18 @@ func (r *{{.ResultSetName}}) ForEach(f func(*{{.Name}}) error) error {
         if err != nil {
             return err
         }
-
-        if !found {
+        
+	if !found {
             break
         }
 
+    	{{if .Init}} \
+
+	if err := result.Init(); err != nil {
+	    return err 
+        }
+	
+	{{end}} \
         err = f(result)
         if err == storable.ErrStop {
             break
