@@ -172,6 +172,7 @@ func (r *EventsFixtureResultSet) One() (*EventsFixture, error) {
 func (r *EventsFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -356,6 +357,7 @@ func (r *EventsSaveFixtureResultSet) One() (*EventsSaveFixture, error) {
 func (r *EventsSaveFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -527,6 +529,7 @@ func (r *MultiKeySortFixtureResultSet) One() (*MultiKeySortFixture, error) {
 func (r *MultiKeySortFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -698,6 +701,7 @@ func (r *QueryFixtureResultSet) One() (*QueryFixture, error) {
 func (r *QueryFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -869,6 +873,7 @@ func (r *ResultSetFixtureResultSet) One() (*ResultSetFixture, error) {
 func (r *ResultSetFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -888,6 +893,201 @@ func (r *ResultSetFixtureResultSet) ForEach(f func(*ResultSetFixture) error) err
 
 		if !found {
 			break
+		}
+
+		err = f(result)
+		if err == storable.ErrStop {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ResultSetInitFixtureStore struct {
+	storable.Store
+}
+
+func NewResultSetInitFixtureStore(db *mgo.Database) *ResultSetInitFixtureStore {
+	return &ResultSetInitFixtureStore{*storable.NewStore(db, "resultset")}
+}
+
+// New returns a new instance of ResultSetInitFixture.
+func (s *ResultSetInitFixtureStore) New() (doc *ResultSetInitFixture) {
+	doc = &ResultSetInitFixture{}
+	if doc != nil {
+		doc.SetIsNew(true)
+		doc.SetId(bson.NewObjectId())
+	}
+	return
+}
+
+// Query return a new instance of ResultSetInitFixtureQuery.
+func (s *ResultSetInitFixtureStore) Query() *ResultSetInitFixtureQuery {
+	return &ResultSetInitFixtureQuery{*storable.NewBaseQuery()}
+}
+
+// Find performs a find on the collection using the given query.
+func (s *ResultSetInitFixtureStore) Find(query *ResultSetInitFixtureQuery) (*ResultSetInitFixtureResultSet, error) {
+	resultSet, err := s.Store.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ResultSetInitFixtureResultSet{ResultSet: *resultSet}, nil
+}
+
+// MustFind like Find but panics on error
+func (s *ResultSetInitFixtureStore) MustFind(query *ResultSetInitFixtureQuery) *ResultSetInitFixtureResultSet {
+	resultSet := s.Store.MustFind(query)
+	return &ResultSetInitFixtureResultSet{ResultSet: *resultSet}
+}
+
+// FindOne performs a find on the collection using the given query returning
+// the first document from the resultset.
+func (s *ResultSetInitFixtureStore) FindOne(query *ResultSetInitFixtureQuery) (*ResultSetInitFixture, error) {
+	resultSet, err := s.Find(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return resultSet.One()
+}
+
+// MustFindOne like FindOne but panics on error
+func (s *ResultSetInitFixtureStore) MustFindOne(query *ResultSetInitFixtureQuery) *ResultSetInitFixture {
+	doc, err := s.FindOne(query)
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
+}
+
+// Insert insert the given document on the collection, trigger BeforeInsert and
+// AfterInsert if any. Throws ErrNonNewDocument if doc is a non-new document.
+func (s *ResultSetInitFixtureStore) Insert(doc *ResultSetInitFixture) error {
+
+	err := s.Store.Insert(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update update the given document on the collection, trigger BeforeUpdate and
+// AfterUpdate if any. Throws ErrNewDocument if doc is a new document.
+func (s *ResultSetInitFixtureStore) Update(doc *ResultSetInitFixture) error {
+
+	err := s.Store.Update(doc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Save insert or update the given document on the collection using Upsert,
+// trigger BeforeUpdate and AfterUpdate if the document is non-new and
+// BeforeInsert and AfterInset if is new.
+func (s *ResultSetInitFixtureStore) Save(doc *ResultSetInitFixture) (updated bool, err error) {
+	updated, err = s.Store.Save(doc)
+	if err != nil {
+		return false, err
+	}
+
+	return
+}
+
+type ResultSetInitFixtureQuery struct {
+	storable.BaseQuery
+}
+
+// FindById add a new criteria to the query searching by _id
+func (q *ResultSetInitFixtureQuery) FindById(ids ...bson.ObjectId) *ResultSetInitFixtureQuery {
+	var vs []interface{}
+	for _, id := range ids {
+		vs = append(vs, id)
+	}
+	q.AddCriteria(operators.In(storable.IdField, vs...))
+
+	return q
+}
+
+type ResultSetInitFixtureResultSet struct {
+	storable.ResultSet
+	last    *ResultSetInitFixture
+	lastErr error
+}
+
+// All returns all documents on the resultset and close the resultset
+func (r *ResultSetInitFixtureResultSet) All() ([]*ResultSetInitFixture, error) {
+	var result []*ResultSetInitFixture
+	err := r.ResultSet.All(&result)
+	if err != nil {
+		return result, err
+	}
+
+	for _, r := range result {
+		if err := r.Init(); err != nil {
+			return result, err
+		}
+	}
+
+	return result, err
+}
+
+// One returns the first document on the resultset and close the resultset
+func (r *ResultSetInitFixtureResultSet) One() (*ResultSetInitFixture, error) {
+	var result *ResultSetInitFixture
+	err := r.ResultSet.One(&result)
+	if err != nil {
+		return result, err
+	}
+
+	err = result.Init()
+
+	return result, err
+}
+
+// Next prepares the next result document for reading with the Get method.
+func (r *ResultSetInitFixtureResultSet) Next() (returned bool) {
+	r.last = nil
+	returned, r.lastErr = r.ResultSet.Next(&r.last)
+	if r.lastErr != nil {
+		return
+	}
+
+	r.lastErr = r.last.Init()
+
+	return
+}
+
+// Get returns the document retrieved with the Next method.
+func (r *ResultSetInitFixtureResultSet) Get() (*ResultSetInitFixture, error) {
+	return r.last, r.lastErr
+}
+
+// ForEach iterates the resultset calling to the given function.
+func (r *ResultSetInitFixtureResultSet) ForEach(f func(*ResultSetInitFixture) error) error {
+	for {
+		var result *ResultSetInitFixture
+		found, err := r.ResultSet.Next(&result)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			break
+		}
+
+		if err := result.Init(); err != nil {
+			return err
 		}
 
 		err = f(result)
@@ -1040,6 +1240,7 @@ func (r *SchemaFixtureResultSet) One() (*SchemaFixture, error) {
 func (r *SchemaFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -1211,6 +1412,7 @@ func (r *StoreFixtureResultSet) One() (*StoreFixture, error) {
 func (r *StoreFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -1382,6 +1584,7 @@ func (r *StoreWithConstructFixtureResultSet) One() (*StoreWithConstructFixture, 
 func (r *StoreWithConstructFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -1543,6 +1746,7 @@ func (r *StoreWithNewFixtureResultSet) One() (*StoreWithNewFixture, error) {
 func (r *StoreWithNewFixtureResultSet) Next() (returned bool) {
 	r.last = nil
 	returned, r.lastErr = r.ResultSet.Next(&r.last)
+
 	return
 }
 
@@ -1583,6 +1787,7 @@ type schema struct {
 	MultiKeySortFixture       *schemaMultiKeySortFixture
 	QueryFixture              *schemaQueryFixture
 	ResultSetFixture          *schemaResultSetFixture
+	ResultSetInitFixture      *schemaResultSetInitFixture
 	SchemaFixture             *schemaSchemaFixture
 	StoreFixture              *schemaStoreFixture
 	StoreWithConstructFixture *schemaStoreWithConstructFixture
@@ -1608,6 +1813,10 @@ type schemaQueryFixture struct {
 }
 
 type schemaResultSetFixture struct {
+	Foo storable.Field
+}
+
+type schemaResultSetInitFixture struct {
 	Foo storable.Field
 }
 
@@ -1679,6 +1888,9 @@ var Schema = schema{
 		Foo: storable.NewField("foo", "string"),
 	},
 	ResultSetFixture: &schemaResultSetFixture{
+		Foo: storable.NewField("foo", "string"),
+	},
+	ResultSetInitFixture: &schemaResultSetInitFixture{
 		Foo: storable.NewField("foo", "string"),
 	},
 	SchemaFixture: &schemaSchemaFixture{

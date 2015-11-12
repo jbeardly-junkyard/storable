@@ -17,6 +17,44 @@ type ProcessorSuite struct{}
 
 var _ = Suite(&ProcessorSuite{})
 
+func (s *ProcessorSuite) TestInit(c *C) {
+	fixtureSrc := `
+  package fixture
+
+  import  "gopkg.in/src-d/storable.v1"
+
+  type InitExample struct {
+    storable.Document
+    Foo string
+  }
+  
+  func (i *InitExample) Init() { return nil }
+  `
+
+	pkg := s.processFixture(fixtureSrc)
+	c.Assert(pkg.Models[0].Init, Equals, true)
+}
+
+func (s *ProcessorSuite) TestInitEmbedded(c *C) {
+	fixtureSrc := `
+  package fixture
+
+  import  "gopkg.in/src-d/storable.v1"
+
+  type InitEmbeddedExample struct {
+    storable.Document
+    OtherWithInit
+  }
+
+  type OtherWithInit struct {}
+
+  func (i *OtherWithInit) Init() error { return nil }
+  `
+
+	pkg := s.processFixture(fixtureSrc)
+	c.Assert(pkg.Models[0].Init, Equals, true)
+}
+
 func (s *ProcessorSuite) TestInlineStruct(c *C) {
 	fixtureSrc := `
   package fixture

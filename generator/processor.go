@@ -140,7 +140,7 @@ func (p *Processor) processPackage(pkg *Package) {
 			continue
 		}
 
-		if m := p.processStruct(name, str); m != nil {
+		if m := p.processStruct(name, str, s.Lookup(name).Type()); m != nil {
 			fmt.Printf("Found: %s\n", m)
 			if err := m.Validate(); err != nil {
 				panic(err)
@@ -210,9 +210,10 @@ func (p *Processor) tryGetStruct(typ types.Type) *types.Struct {
 	return nil
 }
 
-func (p *Processor) processStruct(name string, s *types.Struct) *Model {
+func (p *Processor) processStruct(name string, s *types.Struct, t types.Type) *Model {
 	m := NewModel(name)
 	m.New = p.isNewPresent(name)
+	m.Init = p.isInitPresent(t)
 	m.Events = p.getEvents(name)
 
 	var base int
@@ -220,8 +221,7 @@ func (p *Processor) processStruct(name string, s *types.Struct) *Model {
 		return nil
 	}
 
-	p.procesBaseField(m, m.Fields[base])
-
+	p.processBaseField(m, m.Fields[base])
 	return m
 }
 
@@ -311,6 +311,18 @@ func (p *Processor) processFields(s *types.Struct, done []*types.Struct) (base i
 	return base, fields
 }
 
+func (p *Processor) isInitPresent(t types.Type) bool {
+	ms := types.NewMethodSet(types.NewPointer(t))
+	for i := 0; i < ms.Len(); i++ {
+		m := ms.At(i)
+		if m.Obj().Name() == "Init" {
+			return true
+		}
+	}
+
+	return false
+}
+
 func getStructType(t types.Type) string {
 	ts := t.String()
 	if ts != "time.Time" && ts != "bson.ObjectId" {
@@ -320,7 +332,7 @@ func getStructType(t types.Type) string {
 	return ts
 }
 
-func (p *Processor) procesBaseField(m *Model, f *Field) {
+func (p *Processor) processBaseField(m *Model, f *Field) {
 	m.Collection = f.Tag.Get("collection")
 }
 

@@ -75,6 +75,7 @@ type Model struct {
 	Type        string
 	Fields      []*Field
 	New         bool
+	Init        bool
 	Events      Events
 	CheckedNode *types.Named
 	NewFunc     *types.Func
