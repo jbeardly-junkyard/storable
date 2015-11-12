@@ -28,7 +28,7 @@ func (s *ProcessorSuite) TestInit(c *C) {
     Foo string
   }
   
-  func (i *InitExample) Init() { return nil }
+  func (i *InitExample) Init(doc storable.DocumentBase) { return nil }
   `
 
 	pkg := s.processFixture(fixtureSrc)

@@ -16,7 +16,7 @@ type ResultSetInitFixture struct {
 	Foo               string
 }
 
-func (r *ResultSetInitFixture) Init() error {
+func (r *ResultSetInitFixture) Init(doc storable.DocumentBase) error {
 	r.Foo = "foo"
 	return nil
 }
