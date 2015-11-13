@@ -1062,8 +1062,9 @@ func (r *ResultSetInitFixtureResultSet) Next() (returned bool) {
 	if r.lastErr != nil {
 		return
 	}
-
-	r.lastErr = r.last.Init(r.last)
+	if returned {
+		r.lastErr = r.last.Init(r.last)
+	}
 
 	return
 }

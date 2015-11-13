@@ -48,10 +48,11 @@ func (s *ProcessorSuite) TestInitEmbedded(c *C) {
 
   type OtherWithInit struct {}
 
-  func (i *OtherWithInit) Init() error { return nil }
+  func (i *OtherWithInit) Init(doc storable.DocumentBase) error { return nil }
   `
 
 	pkg := s.processFixture(fixtureSrc)
+	c.Assert(pkg.Models, HasLen, 1)
 	c.Assert(pkg.Models[0].Init, Equals, true)
 }
 

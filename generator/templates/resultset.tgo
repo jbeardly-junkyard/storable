@@ -21,7 +21,6 @@ func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     }
     {{end}} \
 
-
     return result, err 
 }
 
@@ -48,8 +47,9 @@ func (r *{{.ResultSetName}}) Next() (returned bool) {
     if r.lastErr != nil {
 	return
     }
-
-    r.lastErr = r.last.Init(r.last)
+    if returned {
+    	r.lastErr = r.last.Init(r.last)
+    }
     {{end}} \
 
     return
