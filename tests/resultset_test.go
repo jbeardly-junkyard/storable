@@ -94,6 +94,9 @@ func (s *MongoSuite) TestResultSetInitNext(c *C) {
 	doc, err := rs.Get()
 	c.Assert(err, IsNil)
 	c.Assert(doc.Foo, Equals, "foo")
+
+	returned = rs.Next()
+	c.Assert(returned, Equals, false)
 }
 
 func (s *MongoSuite) TestResultSetForEach(c *C) {

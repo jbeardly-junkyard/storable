@@ -1034,7 +1034,7 @@ func (r *ResultSetInitFixtureResultSet) All() ([]*ResultSetInitFixture, error) {
 	}
 
 	for _, r := range result {
-		if err := r.Init(); err != nil {
+		if err := r.Init(r); err != nil {
 			return result, err
 		}
 	}
@@ -1050,7 +1050,7 @@ func (r *ResultSetInitFixtureResultSet) One() (*ResultSetInitFixture, error) {
 		return result, err
 	}
 
-	err = result.Init()
+	err = result.Init(result)
 
 	return result, err
 }
@@ -1062,8 +1062,9 @@ func (r *ResultSetInitFixtureResultSet) Next() (returned bool) {
 	if r.lastErr != nil {
 		return
 	}
-
-	r.lastErr = r.last.Init()
+	if returned {
+		r.lastErr = r.last.Init(r.last)
+	}
 
 	return
 }
@@ -1086,7 +1087,7 @@ func (r *ResultSetInitFixtureResultSet) ForEach(f func(*ResultSetInitFixture) er
 			break
 		}
 
-		if err := result.Init(); err != nil {
+		if err := result.Init(result); err != nil {
 			return err
 		}
 

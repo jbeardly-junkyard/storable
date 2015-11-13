@@ -163,6 +163,7 @@ func (r *ProductResultSet) ForEach(f func(*Product) error) error {
 		if err != nil {
 			return err
 		}
+
 		if !found {
 			break
 		}

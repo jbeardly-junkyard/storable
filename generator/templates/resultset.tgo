@@ -15,12 +15,11 @@ func (r *{{.ResultSetName}}) All() ([]*{{.Name}}, error) {
     }
 
     for _, r := range result {
-	if err := r.Init(); err != nil {
+	if err := r.Init(r); err != nil {
 	    return result, err   
 	}
     }
     {{end}} \
-
 
     return result, err 
 }
@@ -34,7 +33,7 @@ func (r *{{.ResultSetName}}) One() (*{{.Name}}, error) {
 	return result, err
     }
 
-    err = result.Init()
+    err = result.Init(result)
     {{end}} \
 
     return result, err
@@ -48,8 +47,9 @@ func (r *{{.ResultSetName}}) Next() (returned bool) {
     if r.lastErr != nil {
 	return
     }
-
-    r.lastErr = r.last.Init()
+    if returned {
+    	r.lastErr = r.last.Init(r.last)
+    }
     {{end}} \
 
     return
@@ -75,7 +75,7 @@ func (r *{{.ResultSetName}}) ForEach(f func(*{{.Name}}) error) error {
 
     	{{if .Init}} \
 
-	if err := result.Init(); err != nil {
+	if err := result.Init(result); err != nil {
 	    return err 
         }
 	
