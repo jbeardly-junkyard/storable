@@ -3,11 +3,10 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"go/types"
 	"reflect"
 	"strings"
 	"unicode"
-
-	"golang.org/x/tools/go/types"
 )
 
 var findableTypes = map[string]bool{

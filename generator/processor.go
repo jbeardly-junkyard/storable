@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
+	"go/importer"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
-
-	_ "golang.org/x/tools/go/gcimporter"
-	"golang.org/x/tools/go/types"
 )
 
 const BaseDocument = "gopkg.in/src-d/storable.v1.Document"
@@ -108,7 +107,11 @@ func (p *Processor) parseSourceFiles(filenames []string) (*types.Package, error)
 		files = append(files, file)
 	}
 
-	config := types.Config{FakeImportC: true, Error: func(error) {}}
+	config := types.Config{
+		FakeImportC: true,
+		Error:       func(error) {},
+		Importer:    importer.For("gc", nil),
+	}
 	info := &types.Info{}
 
 	return config.Check(p.Path, fs, files, info)
