@@ -2,7 +2,6 @@ package tests
 
 import (
 	"errors"
-	"fmt"
 
 	. "gopkg.in/check.v1"
 )
@@ -113,7 +112,6 @@ func (s *MongoSuite) TestEventsSaveSave(c *C) {
 
 	doc := store.New()
 	err := store.Insert(doc)
-	fmt.Printf("%#v\n", doc)
 	doc.Checks = map[string]bool{"AfterInsert": true}
 
 	updated, err := store.Save(doc)
