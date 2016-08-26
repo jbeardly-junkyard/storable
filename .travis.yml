@@ -7,10 +7,6 @@ go:
   - 1.6
   - 1.7
 
-before_install:
-  - go get github.com/axw/gocov/gocov
-  - go get github.com/mattn/goveralls
-
 install:
   - mkdir -p $GOPATH/src/gopkg.in/src-d
   - cp -rf $PWD $GOPATH/src/gopkg.in/src-d/storable.v1
