@@ -3,7 +3,6 @@ package storable
 import (
 	"testing"
 
-	"code.google.com/p/go-uuid/uuid"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -26,7 +25,7 @@ func (s *BaseSuite) SetUpTest(c *C) {
 	if err != nil {
 		panic(err)
 	}
-	s.db = conn.DB(uuid.New())
+	s.db = conn.DB(bson.NewObjectId().Hex())
 }
 
 func (s *BaseSuite) TestMap_Key(c *C) {
