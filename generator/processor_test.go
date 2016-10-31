@@ -2,12 +2,13 @@ package generator
 
 import (
 	"go/ast"
+	"go/importer"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"reflect"
 	"testing"
 
-	"golang.org/x/tools/go/types"
 	. "gopkg.in/check.v1"
 )
 
@@ -28,7 +29,7 @@ func (s *ProcessorSuite) TestInit(c *C) {
     Foo string
   }
   
-  func (i *InitExample) Init(doc storable.DocumentBase) { return nil }
+  func (i *InitExample) Init(doc storable.DocumentBase) { }
   `
 
 	pkg := s.processFixture(fixtureSrc)
@@ -144,8 +145,10 @@ func (s *ProcessorSuite) processFixture(source string) *Package {
 		panic(err)
 	}
 
-	cfg := &types.Config{}
-	p, _ := cfg.Check("foo", fset, []*ast.File{astFile}, nil)
+	cfg := &types.Config{
+		Importer: importer.For("gc", nil),
+	}
+	p, err := cfg.Check("foo", fset, []*ast.File{astFile}, nil)
 	if err != nil {
 		panic(err)
 	}

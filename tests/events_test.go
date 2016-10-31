@@ -112,13 +112,14 @@ func (s *MongoSuite) TestEventsSaveSave(c *C) {
 
 	doc := store.New()
 	err := store.Insert(doc)
-	doc.Checks = make(map[string]bool, 0)
+	doc.Checks = map[string]bool{"AfterInsert": true}
 
 	updated, err := store.Save(doc)
 	c.Assert(err, IsNil)
 	c.Assert(updated, Equals, true)
 	c.Assert(doc.Checks, DeepEquals, map[string]bool{
-		"BeforeSave": true,
-		"AfterSave":  true,
+		"AfterInsert": true,
+		"BeforeSave":  true,
+		"AfterSave":   true,
 	})
 }
