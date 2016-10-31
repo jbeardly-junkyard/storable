@@ -357,13 +357,13 @@ func (f *Field) DbName() string {
 
 func (f *Field) Inline() bool {
 	tag := f.GetTagValue("bson")
-	endFieldName := strings.Index(tag, ",")
-
-	if endFieldName >= len(tag) {
-		return false
+	for _, p := range strings.Split(tag, ",") {
+		if p == "inline" {
+			return true
+		}
 	}
 
-	return tag[endFieldName+1:] == "inline"
+	return false
 }
 
 func (f *Field) ValidFields() []*Field {
