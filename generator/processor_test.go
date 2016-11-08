@@ -4,10 +4,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"reflect"
 	"testing"
 
-	"golang.org/x/tools/go/types"
 	. "gopkg.in/check.v1"
 )
 

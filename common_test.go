@@ -3,7 +3,7 @@ package storable
 import (
 	"testing"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

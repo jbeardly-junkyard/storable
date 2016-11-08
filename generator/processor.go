@@ -6,14 +6,14 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
 
-	_ "golang.org/x/tools/go/gcimporter"
-	"golang.org/x/tools/go/types"
+	_ "golang.org/x/tools/go/gcimporter15"
 )
 
 const BaseDocument = "gopkg.in/src-d/storable.v1.Document"
